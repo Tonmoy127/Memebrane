@@ -1,0 +1,15 @@
+{
+  "about": "Memebrane is a community built on one simple membrane: the thin, glowing line between studying and losing your mind over it. We turn classroom chaos, exam dread, and everyday academic life into memes, art, and writing — made by Memebraniacs, for Memebraniacs.",
+  "admins": [
+    { "id": "a1", "name": "Add your name", "role": "Founder & Head Admin", "bio": "Click edit to update this card with a real admin.", "photo": "" },
+    { "id": "a2", "name": "Admin Two", "role": "Content Admin", "bio": "Edit me!", "photo": "" },
+    { "id": "a3", "name": "Admin Three", "role": "Design Admin", "bio": "Edit me!", "photo": "" }
+  ],
+  "mods": [
+    { "id": "m1", "name": "Mod One", "role": "Senior Moderator", "bio": "Edit me!", "photo": "" },
+    { "id": "m2", "name": "Mod Two", "role": "Moderator", "bio": "Edit me!", "photo": "" }
+  ],
+  "events": [],
+  "writings": [],
+  "photography": []
+}
