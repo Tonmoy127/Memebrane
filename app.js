@@ -1,14 +1,20 @@
 /* ============================================================
    MEMEBRANE — app.js
-   All content (admins, mods, events, submissions, routine) is
-   stored in localStorage so the page owner can edit it directly
-   in the browser — no code editing needed. Edits persist on
-   this device/browser. To make site-wide edits "permanent" for
-   all visitors, export the data (see exportData()) and ask
-   Claude to bake the new defaults into DEFAULT_DATA below.
+   Content is stored in data.json in the GitHub repo.
+   Edits made via the admin panel are committed back to the repo
+   via the GitHub Contents API, triggering a Vercel redeploy so
+   ALL visitors see the updated data within ~30 seconds.
+
+   CONFIGURATION — fill these three values in (see README):
    ============================================================ */
 
-const STORAGE_KEY = 'memebrane_data_v1';
+const GH_OWNER  = 'Tonmoy127';   // e.g. 'tommy123'
+const GH_REPO   = 'Memebrane';         // e.g. 'memebrane'
+const GH_TOKEN  = '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';        // fine-grained PAT with Contents read+write
+
+/* ============================================================ */
+
+const DATA_FILE = 'data.json';
 
 const DEFAULT_DATA = {
   about: "Memebrane is a community built on one simple membrane: the thin, glowing line between studying and losing your mind over it. We turn classroom chaos, exam dread, and everyday academic life into memes, art, and writing — made by Memebraniacs, for Memebraniacs.",
@@ -34,23 +40,73 @@ const DEFAULT_DATA = {
   }
 };
 
-let DATA = loadData();
+let DATA = JSON.parse(JSON.stringify(DEFAULT_DATA));
 let calViewDate = new Date();
+let _ghFileSha = null; // GitHub requires the current file SHA to update it
 
-function loadData(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw) {
-      const saved = JSON.parse(raw);
-      // Routine is session-only: always reset it to defaults on page load
-      saved.routine = JSON.parse(JSON.stringify(DEFAULT_DATA.routine));
-      return saved;
-    }
-  }catch(e){ console.warn('Could not load saved data, using defaults', e); }
-  return JSON.parse(JSON.stringify(DEFAULT_DATA));
+/* --- GitHub API helpers --- */
+
+async function ghApiUrl(){
+  return `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${DATA_FILE}`;
 }
-function saveData(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+
+async function loadData(){
+  try {
+    const res = await fetch(await ghApiUrl(), {
+      headers: {
+        'Authorization': `Bearer ${GH_TOKEN}`,
+        'Accept': 'application/vnd.github+json'
+      }
+    });
+    if(!res.ok) throw new Error('GitHub fetch failed: ' + res.status);
+    const json = await res.json();
+    _ghFileSha = json.sha;
+    const decoded = JSON.parse(atob(json.content.replace(/\n/g, '')));
+    // Routine is session-only — always reset to defaults
+    decoded.routine = JSON.parse(JSON.stringify(DEFAULT_DATA.routine));
+    DATA = decoded;
+  } catch(e) {
+    console.warn('Could not load data from GitHub, using defaults.', e);
+    toast('⚠️ Could not load data — check GH_TOKEN config');
+  }
+  renderAll();
+  const initialPage = (location.hash || '#home').slice(1);
+  goToPage(initialPage, true);
+}
+
+async function saveData(){
+  // Always keep routine out of saved data (session-only)
+  const toSave = Object.assign({}, DATA);
+  delete toSave.routine;
+
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(toSave, null, 2))));
+
+  const body = {
+    message: 'Update site data via admin panel',
+    content: content,
+  };
+  if(_ghFileSha) body.sha = _ghFileSha;
+
+  try {
+    const res = await fetch(await ghApiUrl(), {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${GH_TOKEN}`,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+    if(!res.ok){
+      const err = await res.json();
+      throw new Error(err.message || res.status);
+    }
+    const json = await res.json();
+    _ghFileSha = json.content.sha; // update SHA for next save
+  } catch(e) {
+    console.error('Save failed:', e);
+    toast('❌ Save failed — ' + e.message);
+  }
 }
 function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
 
@@ -679,9 +735,8 @@ function renderAll(){
   renderRoutine();
   document.getElementById('yearNow').textContent = new Date().getFullYear();
 }
-renderAll();
-const initialPage = (location.hash || '#home').slice(1);
-goToPage(initialPage, true);
+// loadData() is async — it fetches data.json from GitHub, then calls renderAll() + goToPage()
+loadData();
 
 /* ============================================================
    HORIZONTAL SCROLL PROGRESS BAR (replaces native scrollbar)
