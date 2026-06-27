@@ -1,0 +1,17 @@
+{
+  "name": "memebrane",
+  "version": "1.0.0",
+  "description": "A community built on the thin line between studying and losing your mind over it",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Static site - no build required'",
+    "lint": "echo 'No linter configured'"
+  },
+  "keywords": ["memebrane", "community", "memes"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@vercel/analytics": "^1.4.1"
+  }
+}
