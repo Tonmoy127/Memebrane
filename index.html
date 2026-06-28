@@ -128,46 +128,44 @@ body.theme-red .btn.secondary:hover{
 body.theme-red .writing-index{
   color: rgba(249,192,204,0.10);
 }
-/* Dropdown nav menu */
-body.theme-red .nav-links{
-  background: rgba(26,3,8,0.97) !important;
-}
-  box-shadow: 0 16px 40px rgba(0,0,0,0.6), 0 0 30px rgba(249,192,204,0.15);
+/* Dropdown nav menu (mobile only) */
+@media (max-width:980px){
+  body.theme-red .nav-links{
+    background: rgba(26,3,8,0.97) !important;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.6), 0 0 30px rgba(249,192,204,0.15);
+  }
 }
 
-/* ===== THEME DROPDOWN (nav item) ===== */
-.nav-theme-item{
-  position:relative;
-  display:inline-flex;
+/* ===== THEME SWITCH (nav, far right) ===== */
+.theme-switch{
+  display:inline-flex; align-items:center; cursor:none; flex-shrink:0;
 }
-.theme-dropdown{
-  position:absolute; top:calc(100% + 8px); right:0;
-  min-width:140px;
-  background:rgba(6,26,16,0.97);
-  backdrop-filter:blur(24px) saturate(160%);
-  -webkit-backdrop-filter:blur(24px) saturate(160%);
-  border:1px solid var(--glass-border-bright);
-  border-radius:14px;
-  padding:6px;
-  display:flex; flex-direction:column; gap:2px;
-  box-shadow:0 16px 40px rgba(0,0,0,0.5);
-  opacity:0; visibility:hidden; transform:translateY(-6px);
-  transition:opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
-  z-index:50;
+.theme-switch input{
+  position:absolute; opacity:0; width:0; height:0; pointer-events:none;
 }
-.nav-theme-item.open .theme-dropdown{
-  opacity:1; visibility:visible; transform:translateY(0);
+.theme-switch-track{
+  position:relative; display:inline-block;
+  width:46px; height:24px; border-radius:30px;
+  background:rgba(255,255,255,0.14);
+  border:1px solid var(--glass-border);
+  transition:background 0.25s ease, border-color 0.25s ease;
 }
-.theme-option{
-  background:none; border:none; outline:none;
-  text-align:left;
-  color:var(--cream); font-family:'Outfit',sans-serif; font-size:0.9rem;
-  padding:9px 12px; border-radius:9px;
-  cursor:none;
-  transition:background 0.2s, color 0.2s;
+.theme-switch-thumb{
+  position:absolute; top:2px; left:2px;
+  width:18px; height:18px; border-radius:50%;
+  background:var(--gold-bright);
+  box-shadow:0 0 8px rgba(232,200,115,0.5);
+  transition:transform 0.25s cubic-bezier(.4,0,.2,1), background 0.25s ease, box-shadow 0.25s ease;
 }
-.theme-option:hover{ background:rgba(232,200,115,0.10); color:var(--gold-bright); }
-.theme-option.active{ color:var(--gold-bright); background:rgba(232,200,115,0.08); }
+.theme-switch input:checked + .theme-switch-track{
+  background:rgba(192,51,77,0.35);
+  border-color:rgba(249,192,204,0.5);
+}
+.theme-switch input:checked + .theme-switch-track .theme-switch-thumb{
+  transform:translateX(20px);
+  background:#f9c0cc;
+  box-shadow:0 0 8px rgba(249,192,204,0.6);
+}
 
 *{margin:0;padding:0;box-sizing:border-box; cursor:none;}
 html{scroll-behavior:smooth;}
@@ -366,26 +364,8 @@ nav{
     background:rgba(232,200,115,0.10);
     color:var(--gold-bright);
   }
-  .nav-theme-item{
-    width:100%;
-    flex-direction:column;
-    align-items:stretch;
-  }
-  .nav-theme-item .nav-link{
-    padding:13px 16px; border-radius:12px; font-size:1rem;
-    border-bottom:1px solid rgba(255,255,255,0.05);
-  }
-  .theme-dropdown{
-    position:static;
-    margin:2px 0 4px 16px;
-    box-shadow:none;
-    border:none;
-    background:rgba(0,0,0,0.18);
-  }
-  .nav-theme-item:not(.open) .theme-dropdown{
-    display:none;
-  }
   .nav-toggle{display:flex;}
+  .theme-switch{ order:1; }
 }
 
 /* ===== HERO ===== */
@@ -799,14 +779,11 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
     <a href="#" data-page="writings" class="nav-link">Writings</a>
     <a href="#" data-page="photography" class="nav-link">Photography</a>
     <a href="#" data-page="routine" class="nav-link">Routine</a>
-    <div class="nav-theme-item" id="navThemeItem">
-      <a href="#" class="nav-link theme-tab" id="themeTabBtn">Theme</a>
-      <div class="theme-dropdown" id="themeDropdown">
-        <button type="button" class="theme-option active" data-theme="green" onclick="setTheme('green')">Original</button>
-        <button type="button" class="theme-option" data-theme="red" onclick="setTheme('red')">Red</button>
-      </div>
-    </div>
   </div>
+  <label class="theme-switch" id="themeSwitch" aria-label="Toggle red theme">
+    <input type="checkbox" id="themeSwitchInput" onchange="setTheme(this.checked ? 'red' : 'green')">
+    <span class="theme-switch-track"><span class="theme-switch-thumb"></span></span>
+  </label>
   <div class="nav-socials">
     <a href="https://www.facebook.com/memebrane69" target="_blank" aria-label="Facebook Page" class="social-icon">
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>

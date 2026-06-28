@@ -90,10 +90,8 @@ function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9
 function setTheme(value){
   const isRed = value === 'red';
   document.body.classList.toggle('theme-red', isRed);
-  document.querySelectorAll('.theme-option').forEach(btn=>{
-    btn.classList.toggle('active', btn.dataset.theme === value);
-  });
-  closeThemeDropdown();
+  const switchInput = document.getElementById('themeSwitchInput');
+  if(switchInput) switchInput.checked = isRed;
   // Swap all logo images
   const logoSrc = isRed ? 'logo_red.png' : 'logo.jpg';
   const heroLogo = document.querySelector('.hero-logo');
@@ -107,26 +105,6 @@ function setTheme(value){
     ? 'radial-gradient(ellipse at 20% 10%, #3a0612 0%, #0e0106 45%, #060002 100%)'
     : 'radial-gradient(ellipse at 20% 10%, #0d2f1c 0%, #04140d 45%, #020a06 100%)';
 }
-
-function closeThemeDropdown(){
-  const item = document.getElementById('navThemeItem');
-  if(item) item.classList.remove('open');
-}
-
-document.addEventListener('DOMContentLoaded', ()=>{
-  const themeTabBtn = document.getElementById('themeTabBtn');
-  const navThemeItem = document.getElementById('navThemeItem');
-  if(themeTabBtn && navThemeItem){
-    themeTabBtn.addEventListener('click', (e)=>{
-      e.preventDefault();
-      e.stopPropagation();
-      navThemeItem.classList.toggle('open');
-    });
-    document.addEventListener('click', (e)=>{
-      if(!navThemeItem.contains(e.target)) navThemeItem.classList.remove('open');
-    });
-  }
-});
 
 function toast(msg){
   const t = document.getElementById('toast');
