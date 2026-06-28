@@ -333,8 +333,7 @@ nav{
 @media (max-width:980px){
   nav{ padding:9px 16px; }
   .nav-brand{ order:0; }
-  .nav-socials{ display:none; }
-  .nav-socials .theme-switch{ display:inline-flex; position:fixed; top:9px; right:54px; z-index:101; }
+  .nav-socials .theme-switch{ right:54px; }
   .nav-links{
     position:fixed; top:54px; left:0; right:0;
     flex-direction:column; gap:2px;
@@ -720,6 +719,10 @@ table.routine-table input:focus{ background:rgba(232,200,115,0.08); }
 
 .nav-socials{
   display:flex; align-items:center; gap:4px; margin-left:10px;
+}
+@media (max-width:1180px){
+  .nav-socials{ display:none; }
+  .nav-socials .theme-switch{ display:inline-flex; position:fixed; top:9px; right:16px; z-index:101; }
 }
 .social-icon{
   display:flex; align-items:center; justify-content:center;
