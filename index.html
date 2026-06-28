@@ -495,16 +495,13 @@ section{ padding:90px 6vw; position:relative; }
 
 /* ===== PHOTOGRAPHY - masonry ===== */
 .photo-grid{
-  column-count:4; column-gap:16px; max-width:1200px; margin:0 auto;
+  position:relative; max-width:1200px; margin:0 auto;
 }
-@media (max-width:980px){ .photo-grid{ column-count:3; } }
-@media (max-width:680px){ .photo-grid{ column-count:2; column-gap:10px; } }
 .photo-tile{
-  position:relative; padding:0; overflow:hidden; cursor:pointer;
-  border-radius:14px; margin-bottom:16px; break-inside:avoid;
-  display:inline-block; width:100%;
+  position:absolute; padding:0; overflow:hidden; cursor:pointer;
+  border-radius:14px;
+  transition:top 0.3s ease, left 0.3s ease, width 0.3s ease;
 }
-@media (max-width:680px){ .photo-tile{ margin-bottom:10px; } }
 .photo-tile img{
   width:100%; height:auto; display:block; transition:transform 0.4s;
 }
@@ -894,6 +891,67 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
 
 <div class="toast" id="toast"></div>
 
+<script>
+function layoutMasonry(){
+  var grid = document.getElementById('photographyGrid');
+  if(!grid) return;
+  var tiles = Array.prototype.slice.call(grid.querySelectorAll('.photo-tile'));
+  if(!tiles.length) return;
+
+  var gap = window.innerWidth <= 680 ? 10 : 16;
+  var cols = window.innerWidth <= 680 ? 2 : (window.innerWidth <= 980 ? 3 : 4);
+  var gridWidth = grid.clientWidth;
+  var colWidth = (gridWidth - gap * (cols - 1)) / cols;
+  var colHeights = new Array(cols).fill(0);
+
+  tiles.forEach(function(tile){
+    var img = tile.querySelector('img');
+    var naturalRatio = (img && img.naturalWidth) ? img.naturalHeight / img.naturalWidth : 1;
+    var tileHeight = colWidth * naturalRatio;
+
+    var shortest = 0;
+    for(var i = 1; i < cols; i++){
+      if(colHeights[i] < colHeights[shortest]) shortest = i;
+    }
+
+    var left = shortest * (colWidth + gap);
+    var top = colHeights[shortest];
+
+    tile.style.width = colWidth + 'px';
+    tile.style.left = left + 'px';
+    tile.style.top = top + 'px';
+
+    colHeights[shortest] += tileHeight + gap;
+  });
+
+  grid.style.height = Math.max.apply(null, colHeights) + 'px';
+}
+
+function waitForImagesThenLayout(){
+  var grid = document.getElementById('photographyGrid');
+  if(!grid) return;
+  var imgs = grid.querySelectorAll('img');
+  var loaded = 0;
+  if(imgs.length === 0){ layoutMasonry(); return; }
+  imgs.forEach(function(img){
+    if(img.complete){ loaded++; }
+    else{
+      img.addEventListener('load', function(){ loaded++; if(loaded === imgs.length) layoutMasonry(); });
+      img.addEventListener('error', function(){ loaded++; if(loaded === imgs.length) layoutMasonry(); });
+    }
+  });
+  if(loaded === imgs.length) layoutMasonry();
+}
+
+window.addEventListener('resize', layoutMasonry);
+window.addEventListener('load', waitForImagesThenLayout);
+
+var photoGridObserver = new MutationObserver(function(){ waitForImagesThenLayout(); });
+document.addEventListener('DOMContentLoaded', function(){
+  var grid = document.getElementById('photographyGrid');
+  if(grid) photoGridObserver.observe(grid, { childList:true });
+});
+</script>
 <script type="module" src="app.js"></script>
 <script defer src="/_vercel/insights/script.js"></script>
 </body>
