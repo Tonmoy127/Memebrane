@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memebrane</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --void:#04140d;
+  --moss:#0a2818;
+  --moss-light:#103b22;
+  --membrane:#6fae7e;
+  --gold:#d4a843;
+  --gold-bright:#e8c873;
+  --cream:#f1ead9;
+  --glass-bg: rgba(2,8,5,0.32);
+  --glass-border: rgba(255,255,255,0.14);
+  --glass-border-bright: rgba(232,200,115,0.5);
+  --shadow-deep: rgba(0,0,0,0.55);
+}
+/* ===== RED THEME OVERRIDE ===== */
+body.theme-red{
+  --void:#0e0106;
+  --moss:#1a0308;
+  --moss-light:#2e0510;
+  --membrane:#f4a7b9;
+  --gold:#c0334d;
+  --gold-bright:#f9c0cc;
+  --cream:#fdf0f2;
+  --glass-bg: rgba(8,1,3,0.32);
+  --glass-border: rgba(255,255,255,0.12);
+  --glass-border-bright: rgba(249,192,204,0.5);
+  --shadow-deep: rgba(0,0,0,0.6);
+}
+body.theme-red{
+  background: radial-gradient(ellipse at 20% 10%, #3a0612 0%, #0e0106 45%, #060002 100%);
+}
+/* Writing cards - vampire red tint */
+body.theme-red .writing-entry{
+  background: linear-gradient(135deg, rgba(58,6,18,0.55), rgba(14,1,6,0.65));
+  border-color: rgba(249,192,204,0.18);
+}
+/* Calendar cell tints */
+body.theme-red .cal-cell{
+  background: rgba(14,1,6,0.35);
+  border-color: rgba(255,255,255,0.07);
+}
+body.theme-red .cal-cell.today{
+  border-color: rgba(244,167,185,0.55);
+  background: rgba(30,2,10,0.5);
+}
+body.theme-red .cal-cell.has-events{
+  border-color: rgba(249,192,204,0.38);
+  background: rgba(192,51,77,0.10);
+  box-shadow: 0 0 12px rgba(249,192,204,0.15), inset 0 0 8px rgba(249,192,204,0.06);
+}
+body.theme-red .cal-cell.has-events:hover{
+  border-color: rgba(249,192,204,0.65);
+  box-shadow: 0 0 20px rgba(249,192,204,0.28), inset 0 0 12px rgba(249,192,204,0.10);
+}
+body.theme-red .cal-event{
+  background: rgba(249,192,204,0.12);
+  border-left-color: var(--gold);
+}
+/* Flat panels (calendar wrap, upcoming items) - red tint */
+body.theme-red .flat-panel{
+  background: rgba(22,3,8,0.6);
+}
+/* Upcoming date badge */
+body.theme-red .upcoming-date{
+  background: rgba(192,51,77,0.15);
+}
+/* Cursor ring pink on red theme */
+body.theme-red #cursor-ring{
+  border-color: rgba(249,192,204,0.45);
+}
+body.theme-red.cursor-pointer #cursor-ring{
+  border-color: rgba(249,192,204,0.65);
+}
+/* Logo swap - nav, hero, footer */
+/* Hero logo glow - red */
+body.theme-red .hero-logo{
+  border-color: var(--gold-bright);
+  box-shadow: 0 0 60px rgba(192,51,77,0.5), 0 0 120px rgba(244,167,185,0.2);
+}
+/* Nav brand border + glow */
+body.theme-red .nav-brand img{
+  border-color: var(--gold-bright);
+  box-shadow: 0 0 14px rgba(249,192,204,0.4);
+}
+/* Toast on red */
+body.theme-red .toast{
+  background: rgba(30,2,8,0.92);
+  color: var(--gold-bright);
+}
+/* Big texts - dark red instead of pink */
+body.theme-red .hero h1,
+body.theme-red .section-head h2,
+body.theme-red .writing-title,
+body.theme-red .nav-brand span,
+body.theme-red .calendar-nav h3,
+body.theme-red .modal h3,
+body.theme-red .unlock-box h3{
+  color: #8b0a1e;
+}
+body.theme-red .hero h1{
+  text-shadow: 0 0 40px rgba(139,10,30,0.5);
+}
+/* Hero logo box-shadow green stripe → red */
+body.theme-red .hero-logo{
+  box-shadow: 0 0 60px rgba(192,51,77,0.5), 0 0 120px rgba(244,167,185,0.2) !important;
+}
+/* Secondary button - dark red/pink instead of green */
+body.theme-red .btn.secondary{
+  background: rgba(192,51,77,0.12);
+  color: var(--gold-bright);
+  border-color: rgba(192,51,77,0.5) !important;
+}
+body.theme-red .btn.secondary:hover{
+  background: rgba(192,51,77,0.24);
+  box-shadow: 0 0 18px rgba(192,51,77,0.3);
+  border-color: rgba(249,192,204,0.5) !important;
+}
+/* Writing index ghost number */
+body.theme-red .writing-index{
+  color: rgba(249,192,204,0.10);
+}
+/* Dropdown nav menu */
+body.theme-red .nav-links{
+  background: rgba(26,3,8,0.97) !important;
+}
+  box-shadow: 0 16px 40px rgba(0,0,0,0.6), 0 0 30px rgba(249,192,204,0.15);
+}
+
+/* ===== THEME TOGGLE BUTTON ===== */
+#themeToggleBtn{
+  display:flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:20px;
+  padding:5px 12px;
+  font-size:0.75rem; font-family:'Outfit',sans-serif;
+  color:var(--cream); opacity:0.8;
+  cursor:none;
+  transition:opacity 0.2s, background 0.2s;
+  white-space:nowrap;
+}
+#themeToggleBtn:hover{ opacity:1; background:rgba(255,255,255,0.1); }
+.theme-pip{
+  width:10px; height:10px; border-radius:50%;
+  background:var(--membrane);
+  transition:background 0.3s;
+  flex-shrink:0;
+}
+
+*{margin:0;padding:0;box-sizing:border-box; cursor:none;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Outfit',sans-serif;
+  background: radial-gradient(ellipse at 20% 10%, #0d2f1c 0%, var(--void) 45%, #020a06 100%);
+  color:var(--cream);
+  overflow-x:hidden;
+  min-height:100vh;
+  position:relative;
+}
+
+/* ===== CUSTOM CURSOR - DNA helix trail ===== */
+#cursor-dot{
+  position:fixed; top:0; left:0; z-index:9999; pointer-events:none;
+  width:6px; height:6px; border-radius:50%;
+  background:var(--cream);
+  transform:translate(-50%,-50%);
+  opacity:1;
+  transition:opacity 0.15s, transform 0.1s, background 0.15s;
+  box-shadow: 0 0 6px var(--gold-bright), 0 0 12px var(--gold-bright);
+}
+body.cursor-pointer #cursor-dot{
+  background: var(--gold-bright);
+  box-shadow: 0 0 10px var(--gold-bright), 0 0 20px var(--gold-bright);
+  transform: translate(-50%,-50%) scale(1.4);
+}
+body.cursor-down #cursor-dot{
+  transform: translate(-50%,-50%) scale(0.7);
+}
+#cursor-ring{ display:none; }
+#cursor-canvas{
+  position:fixed; inset:0; z-index:9998; pointer-events:none;
+}
+@media (max-width:980px), (hover:none){
+  *{ cursor:auto; }
+  #cursor-dot, #cursor-canvas{ display:none; }
+}
+
+/* ===== BACKGROUND CANVAS LAYERS =====
+   #bg-canvas is position:absolute against body's full content height
+   instead of position:fixed against the viewport. The canvas drawing
+   buffer is resized by JS, and on mobile, position:fixed elements track
+   the *visual* viewport, which shrinks/grows every time the address bar
+   collapses or expands - that combination is what caused the visible
+   "flick" on scroll release. Decorative overlay layers below have no
+   JS resize tied to them, so they stay position:fixed safely. */
+#bg-canvas{
+  position:fixed; inset:0;
+  z-index:0; pointer-events:none; display:block;
+}
+.bg-vignette{
+  position:fixed; inset:0; z-index:1; pointer-events:none;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(2,8,5,0.7) 100%);
+}
+.noise-overlay{
+  position:fixed; inset:0; z-index:2; pointer-events:none; opacity:0.04; mix-blend-mode:overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+main, header, footer, nav { position:relative; z-index:3; }
+
+/* ===== SCROLLBAR - hidden, replaced by horizontal progress bar ===== */
+html{ scrollbar-width:none; }
+html::-webkit-scrollbar{ width:0; height:0; display:none; }
+body::-webkit-scrollbar{ width:0; height:0; display:none; }
+
+/* ===== GLASS BASE ===== */
+.glass{
+  background: rgba(0,0,0,0.15);
+  backdrop-filter: blur(1px) saturate(105%);
+  -webkit-backdrop-filter: blur(1px) saturate(105%);
+  border:1px solid rgba(255,255,255,0.18);
+  border-radius:22px;
+  box-shadow:
+    0 2px 24px rgba(0,0,0,0.20),
+    inset 0 1.5px 0 rgba(255,255,255,0.55),
+    inset 0 -1px 0 rgba(255,255,255,0.08),
+    inset 1px 0 0 rgba(255,255,255,0.10),
+    inset -1px 0 0 rgba(255,255,255,0.06);
+  position:relative;
+  overflow:hidden;
+}
+/* Very faint top sheen - just 33% of what it was */
+.glass::before{
+  content:'';
+  position:absolute; left:0; top:0; right:0; height:28%; border-radius:inherit;
+  background:linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%);
+  pointer-events:none;
+}
+/* Sharp bright rim line */
+.glass::after{
+  content:'';
+  position:absolute; left:6%; top:0; width:88%; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,0.80) 30%, rgba(255,255,255,0.80) 70%, transparent);
+  pointer-events:none;
+}
+.glass-shine{ display:none; }
+
+/* ===== FLAT PANEL - no blur, no glass sheen, just a clean bordered surface ===== */
+.flat-panel{
+  background:rgba(6,22,14,0.55);
+  border:1px solid var(--glass-border);
+  border-radius:22px;
+  box-shadow:0 2px 18px rgba(0,0,0,0.25);
+}
+
+/* ===== NAV ===== */
+nav{
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:9px 28px;
+  background:rgba(0,0,0,0.38);
+  backdrop-filter:blur(14px) saturate(160%);
+  -webkit-backdrop-filter:blur(14px) saturate(160%);
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  gap:14px;
+}
+.nav-progress-track{
+  position:fixed; top:0; left:0; right:0; height:54px; z-index:99;
+  pointer-events:none;
+}
+.nav-progress-bar{
+  position:absolute; left:0; bottom:0; height:2px; width:0%;
+  background:linear-gradient(90deg, var(--membrane), var(--gold-bright));
+  box-shadow:0 0 8px rgba(232,200,115,0.6);
+  transition:width 0.12s linear;
+}
+.nav-brand{display:flex; align-items:center; gap:10px;}
+.nav-brand img{width:34px; height:34px; border-radius:50%; border:2px solid var(--gold-bright); box-shadow:0 0 14px rgba(232,200,115,0.4);}
+.nav-brand span{font-family:'Fredoka'; font-weight:600; font-size:1.15rem; letter-spacing:0.5px; color:var(--gold-bright);}
+.nav-links{display:flex; gap:4px; flex-wrap:wrap;}
+.nav-links a{
+  position:relative;
+  color:var(--cream); text-decoration:none; font-size:0.92rem; font-weight:500;
+  padding:7px 13px; border-radius:30px; transition:color 0.25s;
+  white-space:nowrap;
+}
+.nav-links a::after{
+  content:''; position:absolute; left:12px; right:12px; bottom:3px; height:2px;
+  background:var(--gold-bright); border-radius:2px; transform:scaleX(0); transform-origin:center;
+  transition:transform 0.3s cubic-bezier(.4,0,.2,1); opacity:0.9;
+}
+.nav-links a:hover, .nav-links a:focus-visible{
+  color:var(--gold-bright);
+  outline:none;
+}
+.nav-links a:hover::after, .nav-links a:focus-visible::after{
+  transform:scaleX(1);
+}
+.nav-toggle{
+  display:none; background:none; border:none; color:var(--gold-bright);
+  font-size:1.4rem; align-items:center; justify-content:center;
+  width:38px; height:38px; border-radius:10px; order:-1;
+  flex-direction:column; gap:4px; cursor:none;
+}
+.nav-toggle span{
+  display:block; width:20px; height:2px; background:var(--gold-bright);
+  border-radius:2px; transition:transform 0.3s ease, opacity 0.3s ease;
+}
+.nav-toggle.is-open span:nth-child(1){ transform:translateY(6px) rotate(45deg); }
+.nav-toggle.is-open span:nth-child(2){ opacity:0; }
+.nav-toggle.is-open span:nth-child(3){ transform:translateY(-6px) rotate(-45deg); }
+
+@media (max-width:980px){
+  nav{ padding:9px 16px; }
+  .nav-brand{ order:0; }
+  .nav-socials{ display:none; }
+  .nav-links{
+    position:fixed; top:54px; left:0; right:0;
+    flex-direction:column; gap:2px;
+    background:rgba(6,26,16,0.97);
+    backdrop-filter:blur(24px) saturate(160%);
+    -webkit-backdrop-filter:blur(24px) saturate(160%);
+    border:none; border-top:1px solid var(--glass-border-bright);
+    border-radius:0 0 20px 20px;
+    padding:10px;
+    display:flex;
+    max-height:0; overflow:hidden;
+    opacity:0;
+    transform:translateY(-6px);
+    transition:max-height 0.32s cubic-bezier(.4,0,.2,1), opacity 0.25s ease, transform 0.25s ease;
+    pointer-events:none;
+    box-shadow:0 18px 40px rgba(0,0,0,0.45);
+  }
+  .nav-links.open{
+    max-height:70vh; opacity:1; transform:translateY(0); pointer-events:auto;
+  }
+  .nav-links a{
+    padding:13px 16px; border-radius:12px; font-size:1rem;
+    border-bottom:1px solid rgba(255,255,255,0.05);
+  }
+  .nav-links a:last-child{ border-bottom:none; }
+  .nav-links a::after{ display:none; }
+  .nav-links a.active{
+    background:rgba(232,200,115,0.10);
+    color:var(--gold-bright);
+  }
+  .nav-toggle{display:flex;}
+}
+
+/* ===== HERO ===== */
+header.hero{
+  min-height:100vh;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:100px 20px 60px;
+  position:relative;
+}
+.hero-logo{
+  width:200px; height:200px; border-radius:50%;
+  border:3px solid var(--gold-bright);
+  box-shadow:0 0 60px rgba(232,200,115,0.45), 0 0 120px rgba(111,174,126,0.25);
+  margin-bottom:28px;
+  animation: float-logo 6s ease-in-out infinite;
+}
+@keyframes float-logo{ 0%,100%{transform:translateY(0) rotate(0deg);} 50%{transform:translateY(-14px) rotate(2deg);} }
+.hero h1{
+  font-family:'Fredoka'; font-weight:700; font-size:clamp(2.6rem,7vw,5.2rem);
+  color:var(--gold-bright); letter-spacing:1px;
+  text-shadow:0 0 40px rgba(232,200,115,0.4);
+  line-height:1.05;
+}
+.hero .bn{
+  font-size:clamp(1.1rem,2.6vw,1.6rem); color:var(--membrane); margin-top:14px; font-weight:500;
+}
+.hero p.tag{
+  margin-top:22px; max-width:560px; color:rgba(241,234,217,0.75); font-size:1.05rem; line-height:1.6;
+}
+.hero .pill{
+  margin-top:30px; display:inline-flex; align-items:center; gap:8px;
+  padding:10px 22px; border-radius:40px; font-family:'Outfit'; font-size:0.85rem;
+  color:var(--gold-bright);
+}
+.nav-links a.nav-link.active{
+  color:var(--gold-bright);
+}
+.nav-links a.nav-link.active::after{
+  transform:scaleX(1);
+  opacity:0.55;
+}
+.page{ min-height:60vh; }
+.page[hidden]{ display:none; }
+
+body:not(.unlocked) .edit-only{ display:none !important; }
+body.unlocked .edit-only{ display:inline-flex; }
+body.unlocked .admin-bar.edit-only{ display:flex; }
+body.unlocked button.edit-only{ display:inline-block; }
+
+/* ===== ADMIN UNLOCK PANEL ===== */
+.unlock-backdrop{
+  position:fixed; inset:0; background:rgba(2,8,5,0.75); backdrop-filter:blur(8px);
+  z-index:3000; display:none; align-items:center; justify-content:center; padding:20px;
+}
+.unlock-backdrop.open{ display:flex; }
+.unlock-box{
+  width:100%; max-width:360px; padding:30px; text-align:center;
+}
+.unlock-box h3{ font-family:'Fredoka'; color:var(--gold-bright); font-size:1.3rem; margin-bottom:6px; }
+.unlock-box p{ color:rgba(241,234,217,0.6); font-size:0.85rem; margin-bottom:18px; }
+.unlock-box input{
+  width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--glass-border);
+  background:rgba(4,20,13,0.6); color:var(--cream); font-family:'Outfit'; font-size:1rem;
+  outline:none; text-align:center; letter-spacing:2px;
+}
+.unlock-box input:focus{ border-color:var(--gold-bright); }
+.unlock-actions{ display:flex; gap:10px; justify-content:center; margin-top:18px; }
+.unlock-error{ color:#e88; font-size:0.8rem; margin-top:10px; min-height:1em; }
+
+.scroll-cue{
+  margin-top:50px; width:26px; height:42px; border:2px solid var(--gold); border-radius:14px; position:relative;
+}
+.scroll-cue::before{
+  content:''; position:absolute; top:6px; left:50%; width:4px; height:8px; background:var(--gold-bright);
+  border-radius:2px; transform:translateX(-50%); animation:scrollcue 1.6s infinite;
+}
+@keyframes scrollcue{0%{opacity:1; top:6px;} 60%{opacity:0; top:22px;} 100%{opacity:0;}}
+
+/* ===== SECTIONS ===== */
+section{ padding:90px 6vw; position:relative; }
+.section-head{ text-align:center; margin-bottom:54px; }
+.section-eyebrow{
+  font-family:'Outfit'; color:var(--membrane); font-size:0.8rem; letter-spacing:3px;
+  text-transform:uppercase; margin-bottom:10px; display:block;
+}
+.section-head h2{
+  font-family:'Fredoka'; font-weight:600; font-size:clamp(1.8rem,4vw,2.8rem); color:var(--gold-bright);
+}
+.section-head p{ color:rgba(241,234,217,0.65); max-width:620px; margin:14px auto 0; font-size:0.98rem; }
+
+/* ===== PEOPLE GRID (admins/mods) ===== */
+.people-grid{
+  display:grid; grid-template-columns:repeat(3, minmax(220px,1fr)); gap:26px; max-width:1200px; margin:0 auto; justify-content:center;
+}
+@media (max-width:860px){
+  .people-grid{ grid-template-columns:repeat(2, minmax(200px,1fr)); }
+}
+@media (max-width:560px){
+  .people-grid{ grid-template-columns:1fr; max-width:340px; }
+}
+.person-card{
+  padding:28px 22px; text-align:center; transition:transform 0.35s, box-shadow 0.35s; overflow:hidden;
+}
+.person-card:hover{ transform:translateY(-8px); box-shadow:0 16px 40px rgba(0,0,0,0.6), 0 0 30px rgba(232,200,115,0.15); }
+.person-photo{
+  width:104px; height:104px; border-radius:50%; margin:0 auto 16px; object-fit:cover;
+  border:2.5px solid var(--gold); box-shadow:0 0 22px rgba(212,168,67,0.35);
+  background:linear-gradient(135deg,var(--moss-light),var(--moss));
+}
+.person-name{ font-family:'Fredoka'; font-weight:600; font-size:1.15rem; color:var(--cream); }
+.person-role{ color:var(--gold-bright); font-size:0.82rem; margin-top:4px; font-family:'Outfit'; }
+.person-bio{ margin-top:10px; font-size:0.86rem; color:rgba(241,234,217,0.6); line-height:1.5; }
+.person-card .edit-btn{ margin-top:14px; }
+
+/* ===== EDIT CONTROLS ===== */
+.admin-bar{
+  display:flex; justify-content:center; margin-bottom:30px; gap:12px; flex-wrap:wrap;
+}
+.btn{
+  font-family:'Outfit'; font-weight:600; font-size:0.85rem; padding:10px 20px; border-radius:30px;
+  border:1px solid var(--glass-border-bright); cursor:pointer;
+  background:rgba(212,168,67,0.12); color:var(--gold-bright);
+  transition:all 0.25s; backdrop-filter:blur(10px);
+}
+.btn:hover{ background:rgba(212,168,67,0.25); box-shadow:0 0 18px rgba(212,168,67,0.3); transform:translateY(-2px); }
+.btn.secondary{ background:rgba(111,174,126,0.12); color:var(--membrane); border-color:rgba(111,174,126,0.4); }
+.btn.secondary:hover{ background:rgba(111,174,126,0.22); box-shadow:0 0 18px rgba(111,174,126,0.3); }
+.btn.danger{ background:rgba(200,70,70,0.12); color:#e88; border-color:rgba(200,70,70,0.4); }
+.btn.danger:hover{ background:rgba(200,70,70,0.25); }
+.btn.small{ padding:7px 14px; font-size:0.75rem; }
+
+/* ===== MODAL ===== */
+.modal-backdrop{
+  position:fixed; inset:0; background:rgba(2,8,5,0.7); backdrop-filter:blur(6px);
+  z-index:1000; display:none; align-items:center; justify-content:center; padding:20px;
+}
+.modal-backdrop.open{ display:flex; }
+.modal{
+  width:100%; max-width:480px; padding:32px; max-height:88vh; overflow-y:auto;
+  background:rgba(10,40,24,0.45);
+}
+.modal h3{ font-family:'Fredoka'; color:var(--gold-bright); font-size:1.4rem; margin-bottom:20px; }
+.field{ margin-bottom:16px; }
+.field label{ display:block; font-size:0.8rem; color:var(--membrane); margin-bottom:6px; font-family:'Outfit'; }
+.field input, .field textarea, .field select{
+  width:100%; padding:10px 14px; border-radius:12px; border:1px solid var(--glass-border);
+  background:rgba(4,20,13,0.6); color:var(--cream); font-family:'Outfit'; font-size:0.92rem;
+  outline:none; transition:border-color 0.2s;
+}
+.field input:focus, .field textarea:focus, .field select:focus{ border-color:var(--gold-bright); }
+.field textarea{ resize:vertical; min-height:70px; }
+.modal-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:22px; }
+
+/* ===== CALENDAR ===== */
+.calendar-wrap{ max-width:1000px; margin:0 auto; }
+.calendar-nav{ display:flex; align-items:center; justify-content:center; gap:24px; margin-bottom:24px; }
+.calendar-nav h3{ font-family:'Fredoka'; color:var(--gold-bright); font-size:1.4rem; min-width:160px; text-align:center; }
+.calendar-nav button{
+  background:none; border:1px solid var(--glass-border-bright); color:var(--gold-bright);
+  width:36px; height:36px; min-width:36px; min-height:36px;
+  border-radius:10px; cursor:pointer; font-size:1.1rem;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; padding:0;
+}
+.calendar-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; padding:16px; }
+.cal-dow{ text-align:center; font-family:'Outfit'; font-weight:600; font-size:0.74rem; letter-spacing:0.5px; color:var(--gold-bright); padding:4px 0 10px; text-transform:uppercase; }
+.cal-cell{
+  min-height:80px; border-radius:10px; padding:8px 7px;
+  background:rgba(2,10,6,0.28);
+  border:1px solid rgba(255,255,255,0.08); position:relative; cursor:pointer;
+  transition:background 0.2s, border-color 0.2s;
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.cal-cell:hover{ background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.20); }
+.cal-cell.empty{ background:none; border:none; cursor:default; }
+.cal-cell.today{ border-color:rgba(111,174,126,0.5); background:rgba(2,10,6,0.45); }
+.cal-cell.today .cal-daynum{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:22px; height:22px; padding:0 5px; border-radius:6px;
+  background:var(--membrane); color:var(--void); font-weight:700;
+}
+/* Cells with events glow gold */
+.cal-cell.has-events{
+  border-color:rgba(232,200,115,0.35);
+  background:rgba(212,168,67,0.08);
+  box-shadow: 0 0 12px rgba(232,200,115,0.15), inset 0 0 8px rgba(232,200,115,0.06);
+}
+.cal-cell.has-events:hover{
+  border-color:rgba(232,200,115,0.6);
+  box-shadow: 0 0 20px rgba(232,200,115,0.28), inset 0 0 12px rgba(232,200,115,0.10);
+}
+.cal-daynum{ font-size:0.82rem; color:rgba(241,234,217,0.85); font-family:'Outfit'; font-weight:600; line-height:1; }
+.cal-event{
+  margin-top:4px; font-size:0.65rem; background:rgba(232,200,115,0.12); color:var(--cream);
+  padding:2px 6px; border-radius:5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  border-left:2px solid var(--gold);
+}
+/* Mobile - square aspect ratio, no event text shown */
+@media(max-width:600px){
+  .calendar-grid{ gap:3px; padding:8px; }
+  .cal-cell{ min-height:0; aspect-ratio:1/1; padding:5px; }
+  .cal-daynum{ font-size:0.68rem; }
+  .cal-event{ display:none; }
+  .calendar-nav h3{ font-size:1.1rem; min-width:130px; }
+}
+.upcoming-list{ max-width:700px; margin:30px auto 0; display:flex; flex-direction:column; gap:10px; }
+.upcoming-item{
+  display:flex; align-items:center; gap:16px; padding:14px 18px;
+}
+.upcoming-date{
+  font-family:'Outfit'; color:var(--gold-bright); font-size:0.8rem; min-width:72px; text-align:center;
+  background:rgba(212,168,67,0.12); border-radius:10px; padding:8px 4px;
+}
+.upcoming-info strong{ display:block; color:var(--cream); font-size:0.95rem; }
+.upcoming-info span{ color:rgba(241,234,217,0.6); font-size:0.8rem; }
+.cal-actions{ display:flex; gap:10px; justify-content:center; margin-top:24px; flex-wrap:wrap; }
+
+.empty-state{ text-align:center; padding:50px 20px; color:rgba(241,234,217,0.5); font-style:italic; }
+.read-more-btn{
+  background:none; border:none; padding:0;
+  font-family:'Outfit'; font-size:0.82rem; font-weight:600;
+  color:var(--gold-bright); cursor:none;
+  text-decoration:underline; text-underline-offset:3px;
+  transition:opacity 0.2s;
+}
+.read-more-btn:hover{ opacity:0.75; }
+
+/* ===== WRITINGS - magazine spread ===== */
+.writings-list{
+  display:flex; flex-direction:column; gap:34px; width:100%; max-width:880px; margin:0 auto;
+}
+.writing-entry{
+  display:grid; grid-template-columns:1fr; gap:0;
+  border-radius:24px; overflow:hidden;
+  background:linear-gradient(135deg, rgba(16,59,34,0.45), rgba(4,20,13,0.55));
+  border:1px solid var(--glass-border);
+  box-shadow:0 10px 30px rgba(0,0,0,0.25);
+}
+.writing-entry.has-image{ grid-template-columns:1fr; }
+@media(min-width:760px){
+  .writing-entry.has-image{ grid-template-columns:280px 1fr; }
+}
+.writing-image{
+  width:100%; height:100%; min-height:180px; object-fit:cover; display:block;
+}
+@media(max-width:759px){
+  .writing-image{ max-height:220px; }
+}
+.writing-content{ padding:30px 32px; display:flex; flex-direction:column; gap:12px; position:relative; }
+.writing-index{
+  position:absolute; top:18px; right:24px;
+  font-family:'Fredoka'; font-weight:700; font-size:2.6rem; color:rgba(232,200,115,0.10);
+  line-height:1; pointer-events:none; user-select:none;
+}
+.writing-head{ display:flex; flex-direction:column; gap:3px; position:relative; z-index:1; }
+.writing-title{ font-family:'Fredoka'; font-weight:600; font-size:1.4rem; color:var(--gold-bright); line-height:1.2; }
+.writing-author{ font-family:'Outfit'; font-size:0.78rem; color:var(--membrane); letter-spacing:0.4px; text-transform:uppercase; }
+.writing-body{
+  font-size:0.96rem; color:rgba(241,234,217,0.82); line-height:1.85; white-space:pre-wrap;
+  overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:4;
+  position:relative; z-index:1;
+}
+.writing-body.expanded{ display:block; -webkit-line-clamp:unset; }
+.writing-body::first-letter{
+  font-family:'Fredoka'; font-size:2.1rem; font-weight:600; color:var(--gold-bright);
+  float:left; line-height:0.8; padding:4px 6px 0 0;
+}
+.writing-foot{ display:flex; align-items:center; gap:16px; margin-top:6px; flex-wrap:wrap; position:relative; z-index:1; }
+@media(max-width:600px){
+  .writing-content{ padding:22px 20px; }
+  .writing-title{ font-size:1.18rem; }
+  .writing-index{ font-size:2rem; top:14px; right:18px; }
+}
+
+/* ===== PHOTOGRAPHY - masonry ===== */
+.photo-grid{
+  display:flex; gap:16px; max-width:1200px; margin:0 auto; align-items:flex-start;
+}
+.photo-grid-col{
+  display:flex; flex-direction:column; gap:16px; flex:1; min-width:0;
+}
+@media (max-width:680px){
+  .photo-grid{ gap:10px; }
+  .photo-grid-col{ gap:10px; }
+}
+.photo-tile{
+  position:relative; padding:0; overflow:hidden; cursor:none; border-radius:16px; width:100%;
+}
+.photo-tile img{
+  width:100%; height:auto; display:block; transition:transform 0.4s;
+}
+.photo-tile:hover img{ transform:scale(1.06); }
+.photo-tile-caption{
+  position:absolute; left:0; right:0; bottom:0; padding:10px 12px 8px;
+  background:linear-gradient(to top, rgba(2,8,5,0.85), transparent);
+  display:flex; flex-direction:column; pointer-events:none;
+}
+.photo-tile-title{ font-family:'Fredoka'; font-size:0.85rem; color:var(--gold-bright); font-weight:600; }
+.photo-tile-author{ font-size:0.68rem; color:rgba(241,234,217,0.7); }
+.photo-delete{
+  position:absolute; top:8px; right:8px; padding:4px 9px !important; font-size:0.7rem !important;
+  border-radius:50%; width:26px; height:26px; display:flex; align-items:center; justify-content:center;
+  line-height:1;
+}
+
+/* ===== LIGHTBOX ===== */
+.lightbox-backdrop{
+  position:fixed; inset:0; background:rgba(2,8,5,0.9); backdrop-filter:blur(10px);
+  z-index:2500; display:none; align-items:center; justify-content:center; padding:30px;
+}
+.lightbox-backdrop.open{ display:flex; }
+.lightbox-content{
+  max-width:min(900px, 92vw); max-height:88vh; display:flex; flex-direction:column; align-items:center; gap:14px;
+}
+.lightbox-content img{
+  max-width:100%; max-height:72vh; object-fit:contain; border-radius:16px;
+  border:1px solid var(--glass-border-bright); box-shadow:0 20px 60px rgba(0,0,0,0.6);
+}
+.lightbox-caption{ text-align:center; }
+.lightbox-caption .lt-title{ font-family:'Fredoka'; font-size:1.2rem; color:var(--gold-bright); display:block; }
+.lightbox-caption .lt-author{ font-size:0.85rem; color:rgba(241,234,217,0.7); }
+.lightbox-close{
+  position:absolute; top:24px; right:30px; background:none; border:none; color:var(--gold-bright);
+  font-size:2rem; cursor:pointer; line-height:1;
+}
+
+/* ===== ROUTINE PLANNER ===== */
+.routine-wrap{ max-width:1100px; margin:0 auto; padding:0; }
+.routine-meta{ display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px; }
+.routine-meta .field{ flex:1; min-width:180px; margin-bottom:0; }
+.routine-table-wrap{ overflow-x:auto; border:1px solid var(--glass-border); border-radius:14px; }
+table.routine-table{ width:100%; border-collapse:collapse; min-width:760px; }
+table.routine-table thead th{
+  font-family:'Outfit'; font-size:0.72rem; color:var(--void); text-transform:uppercase; letter-spacing:0.5px;
+  padding:13px 10px; text-align:left;
+  background:var(--gold-bright);
+}
+table.routine-table thead th:first-child{ border-radius:13px 0 0 0; }
+table.routine-table thead th:last-child{ border-radius:0 13px 0 0; }
+table.routine-table td{ padding:0; border-bottom:1px solid var(--glass-border); border-right:1px solid var(--glass-border); }
+table.routine-table td:last-child{ border-right:none; }
+table.routine-table td.routine-action-cell{ padding:6px; text-align:center; }
+table.routine-table tbody tr:nth-child(even){ background:rgba(255,255,255,0.025); }
+table.routine-table tbody tr:last-child td{ border-bottom:none; }
+table.routine-table input{
+  width:100%; height:100%; background:transparent; border:none; border-radius:0;
+  padding:11px 10px; color:var(--cream); font-size:0.85rem; font-family:'Outfit'; outline:none;
+}
+table.routine-table input:focus{ background:rgba(232,200,115,0.08); }
+.routine-actions{ display:flex; gap:12px; justify-content:center; margin-top:26px; flex-wrap:wrap; }
+
+.nav-socials{
+  display:flex; align-items:center; gap:4px; margin-left:10px;
+}
+.social-icon{
+  display:flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:50%;
+  color:var(--membrane); transition:all 0.25s;
+  border:1px solid transparent;
+}
+.social-icon:hover{
+  color:var(--gold-bright); background:rgba(232,200,115,0.12);
+  border-color:var(--glass-border-bright);
+  box-shadow:0 0 12px rgba(232,200,115,0.25);
+}
+
+/* ===== FOOTER ===== */
+footer{
+  text-align:center; padding:50px 20px 36px; color:rgba(241,234,217,0.5); font-size:0.85rem;
+  border-top:1px solid var(--glass-border);
+}
+footer .fbrand{ font-family:'Fredoka'; color:var(--gold-bright); font-size:1.1rem; margin-bottom:6px; }
+footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8px;}
+.footer-socials{ display:flex; justify-content:center; gap:8px; margin:14px 0 10px; }
+
+.fade-up{ opacity:0; transform:translateY(30px); transition:opacity 0.8s ease, transform 0.8s ease; }
+.fade-up.visible{ opacity:1; transform:translateY(0); }
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+}
+
+.toast{
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:rgba(10,40,24,0.92); border:1px solid var(--glass-border-bright); color:var(--gold-bright);
+  padding:13px 26px; border-radius:30px; font-size:0.88rem; z-index:2000; opacity:0;
+  transition:all 0.35s; pointer-events:none; backdrop-filter:blur(10px);
+}
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+<canvas id="cursor-canvas"></canvas>
+
+<canvas id="bg-canvas"></canvas>
+<div class="bg-vignette"></div>
+<div class="noise-overlay"></div>
+
+<nav>
+  <div class="nav-brand">
+    <img src="logo.jpg" alt="Memebrane logo">
+    <span>Memebrane</span>
+  </div>
+  <button class="nav-toggle" id="navToggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <div class="nav-links" id="navLinks">
+    <a href="#" data-page="home" class="nav-link active">Home</a>
+    <a href="#" data-page="events" class="nav-link">Events</a>
+    <a href="#" data-page="writings" class="nav-link">Writings</a>
+    <a href="#" data-page="photography" class="nav-link">Photography</a>
+    <a href="#" data-page="routine" class="nav-link">Routine</a>
+  </div>
+  <div class="nav-socials">
+    <a href="https://www.facebook.com/memebrane69" target="_blank" aria-label="Facebook Page" class="social-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+    </a>
+    <a href="https://www.facebook.com/share/g/196tdsq6g5/" target="_blank" aria-label="Facebook Group" class="social-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </a>
+    <a href="https://discord.gg/nhQxGCnm4" target="_blank" aria-label="Discord Server" class="social-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+    </a>
+    <a href="https://www.instagram.com/memebran3" target="_blank" aria-label="Instagram" class="social-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+    </a>
+    <button id="themeToggleBtn" onclick="toggleTheme()" aria-label="Toggle theme">
+      <span class="theme-pip" id="themePip"></span>
+      <span id="themeLabel">Green</span>
+    </button>
+  </div>
+</nav>
+<div class="nav-progress-track" aria-hidden="true"><div class="nav-progress-bar" id="navProgressBar"></div></div>
+
+<div class="page" id="page-home">
+<header class="hero">
+  <img src="logo.jpg" alt="Memebrane" class="hero-logo">
+  <h1>MEMEBRANE</h1>
+  <p class="tag">Welcome, Memebraniacs, to the home of educational mayhem, community art, and the occasional brainwave.</p>
+  <div class="pill glass">🧠 Built for the Memebraniacs</div>
+  <div class="scroll-cue"></div>
+</header>
+
+<main>
+
+  <section id="admins">
+    <div class="section-head fade-up">
+      <span class="section-eyebrow">The brains behind it</span>
+      <h2>Admins</h2>
+      <p>The core team steering Memebrane's chaos with purpose.</p>
+    </div>
+    <div class="admin-bar edit-only">
+      <button class="btn" onclick="openPersonModal('admins')">+ Add admin</button>
+    </div>
+    <div class="people-grid fade-up" id="adminsGrid"></div>
+  </section>
+
+  <section id="about">
+    <div class="section-head fade-up">
+      <span class="section-eyebrow">About the page</span>
+      <h2>MEMEBRANE</h2>
+      <p class="bn" style="color:var(--membrane); font-size:1.05rem; margin-top:6px;">শিক্ষা বিষয়ক রম্যচিত্র (শিবির)</p>
+    </div>
+    <div class="glass fade-up" style="max-width:760px; margin:0 auto; padding:36px 32px; text-align:center;">
+      <div class="glass-shine"></div>
+      <p style="font-size:1.02rem; line-height:1.8; color:rgba(241,234,217,0.85);" id="aboutText">
+        Memebrane is a community built on one simple membrane: the thin, glowing line between studying and losing your mind over it. We turn classroom chaos, exam dread, and everyday academic life into memes, art, and writing - made by Memebraniacs, for Memebraniacs.
+      </p>
+      <button class="btn small edit-only" style="margin-top:18px;" onclick="editAbout()">✏️ Edit text</button>
+    </div>
+  </section>
+
+  <section id="mods">
+    <div class="section-head fade-up">
+      <span class="section-eyebrow">Keeping the peace</span>
+      <h2>Moderators</h2>
+      <p>The watchful membrane guarding the community day and night.</p>
+    </div>
+    <div class="admin-bar edit-only">
+      <button class="btn" onclick="openPersonModal('mods')">+ Add moderator</button>
+    </div>
+    <div class="people-grid fade-up" id="modsGrid"></div>
+  </section>
+
+</main>
+</div>
+
+<div class="page" id="page-events" hidden>
+<main>
+  <section id="calendar">
+    <div class="section-head fade-up">
+      <span class="section-eyebrow">Mark your calendars</span>
+      <h2>Upcoming Events</h2>
+      <p>Everything happening in the Memebrane universe - add it to your own calendar with one click.</p>
+    </div>
+    <div class="calendar-wrap fade-up flat-panel" style="padding:26px;">
+      <div class="calendar-nav">
+        <button onclick="changeMonth(-1)">‹</button>
+        <h3 id="calMonthLabel"></h3>
+        <button onclick="changeMonth(1)">›</button>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+      <div class="cal-actions">
+        <button class="btn edit-only" onclick="openEventModal()">+ Add event</button>
+        <button class="btn secondary" onclick="downloadICS()">📅 Download calendar (.ics)</button>
+      </div>
+    </div>
+    <div class="upcoming-list" id="upcomingList"></div>
+  </section>
+</main>
+</div>
+
+<div class="page" id="page-writings" hidden>
+<main>
+  <section id="writings">
+    <div class="section-head fade-up">
+      <span class="section-eyebrow">Words from Memebraniacs</span>
+      <h2>Community Writings</h2>
+      <p>Stories, poems, rants, and reflections from the community.</p>
+    </div>
+    <div class="admin-bar edit-only">
+      <button class="btn" onclick="openSubmitModal('writings')">+ Add writing</button>
+    </div>
+    <div class="writings-list" id="writingsGrid"></div>
+  </section>
+</main>
+</div>
+
+<div class="page" id="page-photography" hidden>
+<main>
+  <section id="photography">
+    <div class="section-head fade-up">
+      <span class="section-eyebrow">Frames from Memebraniacs</span>
+      <h2>Community Photography</h2>
+      <p>Snapshots of life, campus, and everything in between.</p>
+    </div>
+    <div class="admin-bar edit-only">
+      <button class="btn" onclick="openSubmitModal('photography')">+ Add photo</button>
+    </div>
+    <div class="photo-grid" id="photographyGrid"></div>
+  </section>
+</main>
+</div>
+
+<div class="page" id="page-routine" hidden>
+<main>
+  <section id="routine">
+    <div class="section-head fade-up">
+      <span class="section-eyebrow">Plan your grind</span>
+      <h2>Study Routine Planner</h2>
+      <p>Build your weekly routine and download it as a PDF to print or keep on your phone.</p>
+    </div>
+    <div class="routine-wrap">
+      <div class="routine-meta">
+        <div class="field"><label>Routine title</label><input id="routineTitle" value="My Weekly Study Routine"></div>
+        <div class="field"><label>Name</label><input id="routineName" placeholder="Your name"></div>
+      </div>
+      <div class="routine-table-wrap">
+        <table class="routine-table" id="routineTable">
+          <thead><tr id="routineHeadRow"></tr></thead>
+          <tbody id="routineBody"></tbody>
+        </table>
+      </div>
+      <div class="routine-actions">
+        <button class="btn" onclick="addRoutineRow()">+ Add time slot</button>
+        <button class="btn secondary" onclick="downloadRoutinePDF()">⬇ Download as PDF</button>
+        <button class="btn danger" onclick="resetRoutine()">Reset</button>
+      </div>
+    </div>
+  </section>
+</main>
+</div>
+
+<footer>
+  <div class="fbrand"><img src="logo.jpg" alt="">Memebrane</div>
+  <div class="footer-socials">
+    <a href="https://www.facebook.com/memebrane69" target="_blank" aria-label="Facebook Page" class="social-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+    </a>
+    <a href="https://www.facebook.com/share/g/196tdsq6g5/" target="_blank" aria-label="Facebook Group" class="social-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </a>
+    <a href="https://discord.gg/nhQxGCnm4" target="_blank" aria-label="Discord Server" class="social-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+    </a>
+    <a href="https://www.instagram.com/memebran3" target="_blank" aria-label="Instagram" class="social-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+    </a>
+  </div>
+  <div>Made with 🧠 for the Memebraniacs &middot; <span id="yearNow"></span></div>
+</footer>
+
+<!-- UNLOCK PANEL (press Space 5x in a row to open) -->
+<div class="unlock-backdrop" id="unlockBackdrop">
+  <div class="unlock-box glass">
+    <div class="glass-shine"></div>
+    <h3>🔒 Editor Access</h3>
+    <p>Enter the password to unlock edit &amp; add controls.</p>
+    <input type="password" id="unlockInput" placeholder="••••••••" autocomplete="off" inputmode="numeric">
+    <div class="unlock-error" id="unlockError"></div>
+    <div class="unlock-actions">
+      <button class="btn secondary" onclick="closeUnlockPanel()">Cancel</button>
+      <button class="btn" onclick="submitUnlock()">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<!-- PHOTO LIGHTBOX -->
+<div class="lightbox-backdrop" id="lightboxBackdrop" onclick="if(event.target===this) closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()" aria-label="Close">✕</button>
+  <div class="lightbox-content">
+    <img id="lightboxImg" src="" alt="">
+    <div class="lightbox-caption">
+      <span class="lt-title" id="lightboxTitle"></span>
+      <span class="lt-author" id="lightboxAuthor"></span>
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-backdrop" id="personModalBackdrop">
+  <div class="modal glass">
+    <div class="glass-shine"></div>
+    <h3 id="personModalTitle">Add admin</h3>
+    <input type="hidden" id="personEditId">
+    <input type="hidden" id="personListType">
+    <div class="field">
+      <label>Photo URL</label>
+      <input id="personPhotoUrl" placeholder="https://i.ibb.co/...">
+      <small style="color:rgba(241,234,217,0.45); font-size:0.72rem; margin-top:4px; display:block;">Upload your photo free at <a href="https://imgbb.com" target="_blank" style="color:var(--gold-bright);">imgbb.com</a> then paste the link here</small>
+    </div>
+    <div class="field"><label>Name</label><input id="personName" placeholder="Full name"></div>
+    <div class="field"><label>Role / title</label><input id="personRole" placeholder="e.g. Founder & Head Admin"></div>
+    <div class="field"><label>Short bio</label><textarea id="personBio" placeholder="A short fun description"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn danger" id="personDeleteBtn" onclick="deletePerson()" style="display:none;">Delete</button>
+      <button class="btn secondary" onclick="closeModal('personModalBackdrop')">Cancel</button>
+      <button class="btn" onclick="savePerson()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="eventModalBackdrop">
+  <div class="modal glass">
+    <div class="glass-shine"></div>
+    <h3 id="eventModalTitle">Add event</h3>
+    <input type="hidden" id="eventEditId">
+    <div class="field"><label>Event title</label><input id="eventTitle" placeholder="e.g. Meme Contest Finals"></div>
+    <div class="field"><label>Date</label><input type="date" id="eventDate"></div>
+    <div class="field"><label>Time (optional)</label><input type="time" id="eventTime"></div>
+    <div class="field"><label>Description</label><textarea id="eventDesc" placeholder="Details about the event"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn danger" id="eventDeleteBtn" onclick="deleteEvent()" style="display:none;">Delete</button>
+      <button class="btn secondary" onclick="closeModal('eventModalBackdrop')">Cancel</button>
+      <button class="btn" onclick="saveEvent()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="submitModalBackdrop">
+  <div class="modal glass">
+    <div class="glass-shine"></div>
+    <h3 id="submitModalTitle">Submit writing</h3>
+    <input type="hidden" id="submitListType">
+    <div class="field"><label>Title</label><input id="submitTitle" placeholder="Title of your piece"></div>
+    <div class="field"><label>Your name</label><input id="submitAuthor" placeholder="Author name"></div>
+    <div class="field" id="submitImageField">
+      <label>Image URL</label>
+      <input id="submitImageUrl" placeholder="https://i.ibb.co/...">
+      <small style="color:rgba(241,234,217,0.45); font-size:0.72rem; margin-top:4px; display:block;">Upload free at <a href="https://imgbb.com" target="_blank" style="color:var(--gold-bright);">imgbb.com</a> then paste the link here</small>
+    </div>
+    <div class="field" id="submitBodyField"><label>Content</label><textarea id="submitBody" placeholder="Write here..." style="min-height:140px;"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('submitModalBackdrop')">Cancel</button>
+      <button class="btn" onclick="saveSubmission()">Publish</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+
+<script type="module" src="app.js"></script>
+<script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>
