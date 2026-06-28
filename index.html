@@ -294,10 +294,10 @@ nav{
   box-shadow:0 0 8px rgba(232,200,115,0.6);
   transition:width 0.12s linear;
 }
-.nav-brand{display:flex; align-items:center; gap:10px;}
+.nav-brand{display:flex; align-items:center; gap:10px; flex-shrink:0;}
 .nav-brand img{width:34px; height:34px; border-radius:50%; border:2px solid var(--gold-bright); box-shadow:0 0 14px rgba(232,200,115,0.4);}
-.nav-brand span{font-family:'Fredoka'; font-weight:600; font-size:1.15rem; letter-spacing:0.5px; color:var(--gold-bright);}
-.nav-links{display:flex; gap:4px; flex-wrap:wrap;}
+.nav-brand span{font-family:'Fredoka'; font-weight:600; font-size:1.15rem; letter-spacing:0.5px; color:var(--gold-bright); white-space:nowrap;}
+.nav-links{display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; min-width:0;}
 .nav-links a{
   position:relative;
   color:var(--cream); text-decoration:none; font-size:0.92rem; font-weight:500;
@@ -330,6 +330,17 @@ nav{
 .nav-toggle.is-open span:nth-child(2){ opacity:0; }
 .nav-toggle.is-open span:nth-child(3){ transform:translateY(-6px) rotate(-45deg); }
 
+@media (max-width:560px){
+  nav{ padding:8px 10px; gap:8px; }
+  .nav-socials{ gap:2px; margin-left:4px; }
+  .social-icon{ width:28px; height:28px; }
+  .nav-right{ gap:8px; }
+  .theme-switch-track{ width:38px; height:20px; }
+  .theme-switch-thumb{ width:15px; height:15px; }
+  .theme-switch input:checked + .theme-switch-track .theme-switch-thumb{ transform:translateX(17px); }
+  .nav-brand span{ font-size:1rem; }
+  .nav-brand img{ width:28px; height:28px; }
+}
 @media (max-width:980px){
   nav{ padding:9px 16px; }
   .nav-brand{ order:0; }
@@ -719,12 +730,7 @@ table.routine-table input:focus{ background:rgba(232,200,115,0.08); }
   display:flex; align-items:center; gap:4px; margin-left:10px;
 }
 .nav-right{
-  display:flex; align-items:center; gap:14px;
-}
-.nav-links-switch{ display:none; }
-@media (max-width:1180px){
-  .nav-right{ display:none; }
-  .nav-links-switch{ display:inline-flex; margin:8px 16px 4px; align-self:flex-start; }
+  display:flex; align-items:center; gap:14px; flex-shrink:0;
 }
 .social-icon{
   display:flex; align-items:center; justify-content:center;
@@ -785,10 +791,6 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
     <a href="#" data-page="writings" class="nav-link">Writings</a>
     <a href="#" data-page="photography" class="nav-link">Photography</a>
     <a href="#" data-page="routine" class="nav-link">Routine</a>
-    <label class="theme-switch nav-links-switch" id="themeSwitchMobile" aria-label="Toggle red theme">
-      <input type="checkbox" id="themeSwitchInputMobile" onchange="setTheme(this.checked ? 'red' : 'green')">
-      <span class="theme-switch-track"><span class="theme-switch-thumb"></span></span>
-    </label>
   </div>
   <div class="nav-right">
     <div class="nav-socials">
