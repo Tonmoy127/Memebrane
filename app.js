@@ -92,6 +92,8 @@ function setTheme(value){
   document.body.classList.toggle('theme-red', isRed);
   const switchInput = document.getElementById('themeSwitchInput');
   if(switchInput) switchInput.checked = isRed;
+  const switchInputMobile = document.getElementById('themeSwitchInputMobile');
+  if(switchInputMobile) switchInputMobile.checked = isRed;
   // Swap all logo images
   const logoSrc = isRed ? 'logo_red.png' : 'logo.jpg';
   const heroLogo = document.querySelector('.hero-logo');
