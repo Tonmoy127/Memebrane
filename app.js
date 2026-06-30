@@ -1696,11 +1696,13 @@ function renderUniversities(){
   if(!resultsEl) return;
 
   let deepHtml = '';
+  let deepIndex = 0;
   UNI_DATA.forEach(u=>{
     if(UNI_ACTIVE_FILTER !== 'all' && UNI_ACTIVE_FILTER !== 'flagship' && u.category !== UNI_ACTIVE_FILTER) return;
     const allDeptText = u.faculties.flatMap(f=>f.departments).join(' ') + ' ' + u.name + ' ' + u.blurb + ' ' + (u.careers.local.join(' ')) + ' ' + (u.careers.abroad.join(' '));
     if(!uniMatchesSearch(allDeptText, query)) return;
-    deepHtml += renderUniCard(u);
+    deepIndex++;
+    deepHtml += renderUniCard(u, deepIndex);
   });
 
   let lightHtml = '';
@@ -1711,11 +1713,15 @@ function renderUniversities(){
     return uniMatchesSearch(text, query);
   });
   if(lightMatches.length){
-    lightHtml = `<div class="uni-light-grid">` + lightMatches.map(u=>`
-      <div class="uni-light-card">
-        <h4>${u.name}</h4>
-        <span class="uni-light-loc">${u.location} &middot; ${UNI_CATEGORY_LABELS[u.category]||u.category}</span>
-        <p>${u.note}</p>
+    lightHtml = `<div class="uni-light-list">` + lightMatches.map((u,i)=>`
+      <div class="uni-light-row">
+        <span class="uni-light-index">${String(i+1).padStart(2,'0')}</span>
+        <div class="uni-light-main">
+          <h4>${u.name}</h4>
+          <span class="uni-light-loc">${u.location}</span>
+          <p>${u.note}</p>
+        </div>
+        <span class="uni-light-cat">${UNI_CATEGORY_LABELS[u.category]||u.category}</span>
       </div>
     `).join('') + `</div>`;
   }
@@ -1727,10 +1733,10 @@ function renderUniversities(){
 
   resultsEl.innerHTML =
     (deepHtml ? `<div class="uni-deep-list">${deepHtml}</div>` : '') +
-    (lightHtml ? `<h3 class="uni-light-heading">Other Public Universities</h3>${lightHtml}` : '');
+    (lightHtml ? `<h3 class="uni-light-heading">Other Public Universities</h3><p class="uni-light-sub">${lightMatches.length} institutions</p>${lightHtml}` : '');
 }
 
-function renderUniCard(u){
+function renderUniCard(u, index){
   const facultyHtml = u.faculties.map(f=>`
     <div class="uni-faculty">
       <h5>${f.name}</h5>
@@ -1739,13 +1745,13 @@ function renderUniCard(u){
   `).join('');
 
   return `
-    <div class="uni-card" id="uni-${u.id}">
+    <div class="uni-card" id="uni-${u.id}" data-index="${String(index).padStart(2,'0')}">
       <div class="uni-card-head">
         <div>
           <h3>${u.name}</h3>
           <span class="uni-meta">${u.location} &middot; Est. ${u.established}</span>
         </div>
-        <button type="button" class="uni-toggle-btn" onclick="toggleUniCard('${u.id}')" id="uniToggle-${u.id}">View details</button>
+        <button type="button" class="uni-toggle-btn" onclick="toggleUniCard('${u.id}')" id="uniToggle-${u.id}">View details &rarr;</button>
       </div>
       <p class="uni-blurb">${u.blurb}</p>
       <div class="uni-card-body" id="uniBody-${u.id}" hidden>
@@ -1773,7 +1779,7 @@ function toggleUniCard(id){
   if(!body) return;
   const isHidden = body.hidden;
   body.hidden = !isHidden;
-  if(btn) btn.textContent = isHidden ? 'Hide details' : 'View details';
+  if(btn) btn.innerHTML = isHidden ? 'Hide details &larr;' : 'View details &rarr;';
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
