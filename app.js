@@ -898,6 +898,9 @@ window.openSubmitModal   = openSubmitModal;
 window.saveSubmission    = saveSubmission;
 window.deleteSubmission  = deleteSubmission;
 window.toggleReadMore    = toggleReadMore;
+window.renderUniversities = renderUniversities;
+window.setUniFilter      = setUniFilter;
+window.toggleUniCard     = toggleUniCard;
 window.openLightbox      = openLightbox;
 window.closeLightbox     = closeLightbox;
 window.addRoutineRow     = addRoutineRow;
@@ -1373,6 +1376,142 @@ document.getElementById('unlockInput').addEventListener('keydown', (e)=>{
    ============================================================ */
 const UNI_DATA = [
   {
+    id: 'iba',
+    name: 'Institute of Business Administration, University of Dhaka (IBA-DU)',
+    short: 'IBA',
+    location: 'Dhaka (DU campus)',
+    tier: 'flagship',
+    category: 'business',
+    established: '1966',
+    blurb: 'Widely regarded as the best business school in Bangladesh. Founded with Ford Foundation and Indiana University support, IBA produces the country\'s most sought-after BBA and MBA graduates.',
+    faculties: [
+      {
+        name: 'Undergraduate Program',
+        departments: ['Bachelor of Business Administration (BBA) - 4-year, majors/minors in Accounting, Finance, Human Resource Management, Information Systems, Marketing, and Operations Management']
+      },
+      {
+        name: 'Graduate Programs',
+        departments: ['Master of Business Administration (MBA), full-time and part-time', 'Executive MBA (EMBA)', 'MPhil and PhD in Business Administration', 'Postgraduate Diploma in Garment Business (PGD-GB)', 'Advanced Certificate in Business Administration (ACBA)']
+      }
+    ],
+    careers: {
+      local: ['Management trainee and leadership programs at top FMCG and conglomerates (Unilever, BAT Bangladesh, Square, ACI)', 'Investment banking, corporate finance, and asset management at local and multinational banks', 'Strategy and consulting roles at firms operating in Bangladesh', 'Brand management and marketing at telecom and consumer goods companies', 'Entrepreneurship and startup founding, IBA has a strong record of producing founders', 'Senior roles in development finance institutions and the central bank'],
+      abroad: ['Admission into top global MBA programs (Harvard, Wharton, INSEAD, LBS) after a few years of work experience', 'Roles at global consulting firms (McKinsey, BCG, Bain) and investment banks for graduates who study abroad', 'Multinational corporate roles in Singapore, the Middle East, and Western markets', 'Development sector roles at the World Bank, ADB, and UN agencies, often after a master\'s in public policy or development economics']
+    }
+  },
+  {
+    id: 'buet',
+    name: 'Bangladesh University of Engineering and Technology (BUET)',
+    short: 'BUET',
+    location: 'Dhaka (Palashi)',
+    tier: 'flagship',
+    category: 'engineering',
+    established: '1962 (as EPUET), renamed 1962',
+    blurb: 'The most prestigious engineering and architecture university in Bangladesh. Admission is the most competitive in the country, with around 1,300 seats across 13 undergraduate departments under 6 faculties.',
+    faculties: [
+      {
+        name: 'Faculty of Civil Engineering',
+        departments: ['Civil Engineering', 'Water Resources Engineering', 'Building Engineering and Construction Management']
+      },
+      {
+        name: 'Faculty of Electrical and Electronic Engineering',
+        departments: ['Electrical and Electronic Engineering (EEE)', 'Computer Science and Engineering (CSE)', 'Biomedical Engineering (BME)']
+      },
+      {
+        name: 'Faculty of Mechanical Engineering',
+        departments: ['Mechanical Engineering (ME)', 'Industrial and Production Engineering (IPE)', 'Naval Architecture and Marine Engineering (NAME)']
+      },
+      {
+        name: 'Faculty of Chemical and Materials Engineering',
+        departments: ['Chemical Engineering', 'Materials and Metallurgical Engineering (MME)', 'Leather Engineering', 'Petroleum and Mining Engineering']
+      },
+      {
+        name: 'Faculty of Architecture and Planning',
+        departments: ['Architecture', 'Urban and Regional Planning (URP)']
+      },
+      {
+        name: 'Faculty of Science (postgraduate research)',
+        departments: ['Physics', 'Chemistry', 'Mathematics', 'Humanities (Economics, language)']
+      }
+    ],
+    careers: {
+      local: ['Engineering roles in WASA, REB, PDB, Roads and Highways Department, and other government bodies via BCS (Engineering cadres)', 'Telecom and tech companies (Grameenphone, Robi, local software firms) for EEE and CSE graduates', 'Construction and real estate firms for Civil and Building Engineering graduates', 'Power and energy sector (Power Grid Company, private power plants)', 'Consulting engineering firms and infrastructure projects (Padma Bridge, metro rail)', 'University faculty positions at BUET, public, and private universities'],
+      abroad: ['MS/PhD programs in the US, Canada, Germany, South Korea, and Australia - BUET has one of the strongest track records of any Bangladeshi university for graduate admission with funding', 'Roles at global tech companies (Google, Microsoft, Amazon) for CSE and EEE graduates, often after a master\'s abroad', 'Oil, gas, and shipping industry roles in the Middle East and Southeast Asia for Petroleum, Mining, and Naval Architecture graduates', 'International engineering consultancies and multinational construction firms', 'A large share of BUET graduates (commonly cited around 50-60%) pursue higher studies abroad, with many settling internationally']
+    }
+  },
+  {
+    id: 'ckruet',
+    name: 'CUET, KUET and RUET (the CKRUET Universities)',
+    short: 'CKRUET',
+    location: 'Chattogram, Khulna, Rajshahi',
+    tier: 'flagship',
+    category: 'engineering',
+    established: 'CUET 1968 (university status 2003), KUET 1967 (university status 2003), RUET 1964 (university status 2003)',
+    blurb: 'Chittagong University of Engineering and Technology (CUET), Khulna University of Engineering and Technology (KUET), and Rajshahi University of Engineering and Technology (RUET) are the three regional engineering universities ranked just below BUET. They hold a single combined admission test (CKRUET) every year with one merit list and one preference form across all three campuses.',
+    faculties: [
+      {
+        name: 'CUET - Faculty of Civil and Environmental Engineering',
+        departments: ['Civil Engineering', 'Water Resources Engineering', 'Urban and Regional Planning (URP)']
+      },
+      {
+        name: 'CUET - Faculty of Electrical and Computer Engineering',
+        departments: ['Electrical and Electronic Engineering (EEE)', 'Computer Science and Engineering (CSE)', 'Electronics and Telecommunication Engineering (ETE)']
+      },
+      {
+        name: 'CUET - Faculty of Mechanical Engineering',
+        departments: ['Mechanical Engineering (ME)', 'Industrial and Production Engineering (IPE)', 'Mechatronics and Industrial Engineering']
+      },
+      {
+        name: 'CUET - Faculty of Architecture and Planning',
+        departments: ['Architecture']
+      },
+      {
+        name: 'CUET - Faculty of Materials Science',
+        departments: ['Materials Science and Engineering']
+      },
+      {
+        name: 'KUET - Departments',
+        departments: ['Civil Engineering', 'Electrical and Electronic Engineering (EEE)', 'Computer Science and Engineering (CSE)', 'Mechanical Engineering (ME)', 'Industrial Engineering and Management (IEM)', 'Electronics and Communication Engineering (ECE)', 'Architecture', 'Urban and Regional Planning (URP)', 'Building Engineering and Construction Management (BECM)', 'Leather Engineering', 'Biomedical Engineering (BME)', 'Materials Science and Engineering']
+      },
+      {
+        name: 'RUET - Departments',
+        departments: ['Civil Engineering', 'Electrical and Electronic Engineering (EEE)', 'Computer Science and Engineering (CSE)', 'Mechanical Engineering (ME)', 'Industrial and Production Engineering (IPE)', 'Electronics and Telecommunication Engineering (ETE)', 'Architecture', 'Urban and Regional Planning (URP)', 'Glass and Ceramic Engineering', 'Mechatronics Engineering', 'Chemical Engineering', 'Materials Science and Engineering']
+      }
+    ],
+    careers: {
+      local: ['Engineering roles in government bodies (PDB, REB, WASA, Roads and Highways, LGED) via BCS Engineering cadres', 'Telecom and software companies for EEE, CSE, and ETE graduates', 'Construction, real estate, and infrastructure firms for Civil, Architecture, and BECM graduates', 'Industrial and manufacturing sector roles in the Chattogram, Khulna, and Rajshahi regional economies (RMG backward linkage industries, ship building, leather)', 'Faculty positions at CUET, KUET, RUET, and other public/private engineering universities'],
+      abroad: ['MS/PhD admission in the US, Canada, Europe, and South Korea, a well-established pipeline for CSE and EEE graduates', 'Software engineering and tech roles abroad after graduate study', 'Maritime, shipbuilding, and offshore engineering roles in Singapore and the Gulf, especially for KUET graduates given Khulna\'s shipbuilding industry links', 'Construction and infrastructure consultancy roles across South and Southeast Asia']
+    }
+  },
+  {
+    id: 'medical',
+    name: 'Government Medical Colleges of Bangladesh',
+    short: 'Medical',
+    location: 'All divisions',
+    tier: 'flagship',
+    category: 'medical',
+    established: 'Earliest: Dhaka Medical College, 1946',
+    blurb: 'Bangladesh has 37 government medical colleges offering the 5-year MBBS degree, regulated by the Bangladesh Medical and Dental Council (BM&DC). Admission is through a single nationwide MBBS admission test. The top names include Dhaka Medical College (DMC), Sir Salimullah Medical College, Chittagong Medical College, Rajshahi Medical College, Sylhet MAG Osmani Medical College, Mymensingh Medical College, and Shaheed Suhrawardy Medical College. Bangabandhu Sheikh Mujib Medical University (BSMMU) is the country\'s only dedicated medical university, offering postgraduate degrees (MD, MS, FCPS, MPhil, PhD) only.',
+    faculties: [
+      {
+        name: 'Core Degree Programs',
+        departments: ['MBBS (Bachelor of Medicine and Bachelor of Surgery) - 5 years plus 1-year internship', 'BDS (Bachelor of Dental Surgery) - 4 years plus 1-year internship', 'B.Sc. in Nursing and related allied health programs at select colleges']
+      },
+      {
+        name: 'Major Government Medical Colleges',
+        departments: ['Dhaka Medical College (DMC), Dhaka - the largest, established 1946', 'Sir Salimullah Medical College, Dhaka', 'Shaheed Suhrawardy Medical College, Dhaka', 'Mymensingh Medical College', 'Chittagong Medical College', 'Rajshahi Medical College', 'Sylhet M.A.G. Osmani Medical College', 'Sher-e-Bangla Medical College, Barishal', 'Rangpur Medical College', 'Cumilla Medical College', 'Khulna Medical College', 'Faridpur Medical College', 'Shaheed Ziaur Rahman Medical College, Bogura', 'Plus 23+ additional government medical colleges across all districts']
+      },
+      {
+        name: 'Postgraduate-only University',
+        departments: ['Bangabandhu Sheikh Mujib Medical University (BSMMU) - MD, MS, MPhil, PhD, FCPS, Diploma courses, the apex postgraduate medical institution']
+      }
+    ],
+    careers: {
+      local: ['Bangladesh Civil Service (Health) cadre, posting as medical officers in government hospitals and upazila health complexes', 'Specialization via FCPS, MD, or MS at BSMMU and other institutions, leading to consultant and specialist roles', 'Private practice and chamber consultancy after specialization', 'Faculty positions at medical colleges', 'Roles in public health programs run by the Directorate General of Health Services (DGHS) and NGOs (icddr,b, BRAC Health)'],
+      abroad: ['USMLE pathway to residency and practice in the United States', 'PLAB pathway to practice in the United Kingdom', 'Fellowship and specialist training in Australia, Canada, and the Gulf countries', 'Research and academic medicine positions abroad after MPhil/PhD or further specialization', 'WHO and international health organization roles for public health-focused graduates']
+    }
+  },
+  {
     id: 'du',
     name: 'University of Dhaka (DU)',
     short: 'DU',
@@ -1438,98 +1577,6 @@ const UNI_DATA = [
     careers: {
       local: ['BCS (Administration, Foreign Affairs, Police, Customs, and all other cadres - DU graduates dominate BCS cadre intake every year)', 'Bangladesh Bank and commercial/state-owned banks (especially from Economics, Accounting, Finance, IBA)', 'Judiciary and legal practice (from Faculty of Law, after Bar Council enrollment)', 'University and college teaching, research institutes (BIDS, BRAC Institutes)', 'Journalism and media houses (Prothom Alo, The Daily Star, television channels)', 'NGOs and development sector (BRAC, World Bank Dhaka office, UN agencies)', 'Corporate roles in telecom, FMCG, pharma (Grameenphone, Unilever, Square)', 'Civil service and policy think tanks (PRI, CPD)'],
       abroad: ['Graduate school (MS/MPhil/PhD) in the US, UK, Australia, and Europe, especially from Economics, Physics, CSE, and IBA, often with Fulbright, Chevening, or Commonwealth scholarships', 'UN and international organization roles for IR and Development Studies graduates', 'IT and software roles abroad for CSE and Applied Mathematics graduates', 'International law and human rights work for Law graduates, including ICC and ICJ internships', 'Global consulting and finance (McKinsey, big banks) for top IBA graduates']
-    }
-  },
-  {
-    id: 'buet',
-    name: 'Bangladesh University of Engineering and Technology (BUET)',
-    short: 'BUET',
-    location: 'Dhaka (Palashi)',
-    tier: 'flagship',
-    category: 'engineering',
-    established: '1962 (as EPUET), renamed 1962',
-    blurb: 'The most prestigious engineering and architecture university in Bangladesh. Admission is the most competitive in the country, with around 1,300 seats across 13 undergraduate departments under 6 faculties.',
-    faculties: [
-      {
-        name: 'Faculty of Civil Engineering',
-        departments: ['Civil Engineering', 'Water Resources Engineering', 'Building Engineering and Construction Management']
-      },
-      {
-        name: 'Faculty of Electrical and Electronic Engineering',
-        departments: ['Electrical and Electronic Engineering (EEE)', 'Computer Science and Engineering (CSE)', 'Biomedical Engineering (BME)']
-      },
-      {
-        name: 'Faculty of Mechanical Engineering',
-        departments: ['Mechanical Engineering (ME)', 'Industrial and Production Engineering (IPE)', 'Naval Architecture and Marine Engineering (NAME)']
-      },
-      {
-        name: 'Faculty of Chemical and Materials Engineering',
-        departments: ['Chemical Engineering', 'Materials and Metallurgical Engineering (MME)', 'Leather Engineering', 'Petroleum and Mining Engineering']
-      },
-      {
-        name: 'Faculty of Architecture and Planning',
-        departments: ['Architecture', 'Urban and Regional Planning (URP)']
-      },
-      {
-        name: 'Faculty of Science (postgraduate research)',
-        departments: ['Physics', 'Chemistry', 'Mathematics', 'Humanities (Economics, language)']
-      }
-    ],
-    careers: {
-      local: ['Engineering roles in WASA, REB, PDB, Roads and Highways Department, and other government bodies via BCS (Engineering cadres)', 'Telecom and tech companies (Grameenphone, Robi, local software firms) for EEE and CSE graduates', 'Construction and real estate firms for Civil and Building Engineering graduates', 'Power and energy sector (Power Grid Company, private power plants)', 'Consulting engineering firms and infrastructure projects (Padma Bridge, metro rail)', 'University faculty positions at BUET, public, and private universities'],
-      abroad: ['MS/PhD programs in the US, Canada, Germany, South Korea, and Australia - BUET has one of the strongest track records of any Bangladeshi university for graduate admission with funding', 'Roles at global tech companies (Google, Microsoft, Amazon) for CSE and EEE graduates, often after a master\'s abroad', 'Oil, gas, and shipping industry roles in the Middle East and Southeast Asia for Petroleum, Mining, and Naval Architecture graduates', 'International engineering consultancies and multinational construction firms', 'A large share of BUET graduates (commonly cited around 50-60%) pursue higher studies abroad, with many settling internationally']
-    }
-  },
-  {
-    id: 'iba',
-    name: 'Institute of Business Administration, University of Dhaka (IBA-DU)',
-    short: 'IBA',
-    location: 'Dhaka (DU campus)',
-    tier: 'flagship',
-    category: 'business',
-    established: '1966',
-    blurb: 'Widely regarded as the best business school in Bangladesh. Founded with Ford Foundation and Indiana University support, IBA produces the country\'s most sought-after BBA and MBA graduates.',
-    faculties: [
-      {
-        name: 'Undergraduate Program',
-        departments: ['Bachelor of Business Administration (BBA) - 4-year, majors/minors in Accounting, Finance, Human Resource Management, Information Systems, Marketing, and Operations Management']
-      },
-      {
-        name: 'Graduate Programs',
-        departments: ['Master of Business Administration (MBA), full-time and part-time', 'Executive MBA (EMBA)', 'MPhil and PhD in Business Administration', 'Postgraduate Diploma in Garment Business (PGD-GB)', 'Advanced Certificate in Business Administration (ACBA)']
-      }
-    ],
-    careers: {
-      local: ['Management trainee and leadership programs at top FMCG and conglomerates (Unilever, BAT Bangladesh, Square, ACI)', 'Investment banking, corporate finance, and asset management at local and multinational banks', 'Strategy and consulting roles at firms operating in Bangladesh', 'Brand management and marketing at telecom and consumer goods companies', 'Entrepreneurship and startup founding, IBA has a strong record of producing founders', 'Senior roles in development finance institutions and the central bank'],
-      abroad: ['Admission into top global MBA programs (Harvard, Wharton, INSEAD, LBS) after a few years of work experience', 'Roles at global consulting firms (McKinsey, BCG, Bain) and investment banks for graduates who study abroad', 'Multinational corporate roles in Singapore, the Middle East, and Western markets', 'Development sector roles at the World Bank, ADB, and UN agencies, often after a master\'s in public policy or development economics']
-    }
-  },
-  {
-    id: 'medical',
-    name: 'Government Medical Colleges of Bangladesh',
-    short: 'Medical',
-    location: 'All divisions',
-    tier: 'flagship',
-    category: 'medical',
-    established: 'Earliest: Dhaka Medical College, 1946',
-    blurb: 'Bangladesh has 37 government medical colleges offering the 5-year MBBS degree, regulated by the Bangladesh Medical and Dental Council (BM&DC). Admission is through a single nationwide MBBS admission test. The top names include Dhaka Medical College (DMC), Sir Salimullah Medical College, Chittagong Medical College, Rajshahi Medical College, Sylhet MAG Osmani Medical College, Mymensingh Medical College, and Shaheed Suhrawardy Medical College. Bangabandhu Sheikh Mujib Medical University (BSMMU) is the country\'s only dedicated medical university, offering postgraduate degrees (MD, MS, FCPS, MPhil, PhD) only.',
-    faculties: [
-      {
-        name: 'Core Degree Programs',
-        departments: ['MBBS (Bachelor of Medicine and Bachelor of Surgery) - 5 years plus 1-year internship', 'BDS (Bachelor of Dental Surgery) - 4 years plus 1-year internship', 'B.Sc. in Nursing and related allied health programs at select colleges']
-      },
-      {
-        name: 'Major Government Medical Colleges',
-        departments: ['Dhaka Medical College (DMC), Dhaka - the largest, established 1946', 'Sir Salimullah Medical College, Dhaka', 'Shaheed Suhrawardy Medical College, Dhaka', 'Mymensingh Medical College', 'Chittagong Medical College', 'Rajshahi Medical College', 'Sylhet M.A.G. Osmani Medical College', 'Sher-e-Bangla Medical College, Barishal', 'Rangpur Medical College', 'Cumilla Medical College', 'Khulna Medical College', 'Faridpur Medical College', 'Shaheed Ziaur Rahman Medical College, Bogura', 'Plus 23+ additional government medical colleges across all districts']
-      },
-      {
-        name: 'Postgraduate-only University',
-        departments: ['Bangabandhu Sheikh Mujib Medical University (BSMMU) - MD, MS, MPhil, PhD, FCPS, Diploma courses, the apex postgraduate medical institution']
-      }
-    ],
-    careers: {
-      local: ['Bangladesh Civil Service (Health) cadre, posting as medical officers in government hospitals and upazila health complexes', 'Specialization via FCPS, MD, or MS at BSMMU and other institutions, leading to consultant and specialist roles', 'Private practice and chamber consultancy after specialization', 'Faculty positions at medical colleges', 'Roles in public health programs run by the Directorate General of Health Services (DGHS) and NGOs (icddr,b, BRAC Health)'],
-      abroad: ['USMLE pathway to residency and practice in the United States', 'PLAB pathway to practice in the United Kingdom', 'Fellowship and specialist training in Australia, Canada, and the Gulf countries', 'Research and academic medicine positions abroad after MPhil/PhD or further specialization', 'WHO and international health organization roles for public health-focused graduates']
     }
   },
   {
