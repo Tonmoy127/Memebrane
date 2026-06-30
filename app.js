@@ -830,7 +830,7 @@ async function downloadRoutinePDF(){
 }
 
 /* ---------- PAGE ROUTER ---------- */
-const PAGES = ['home','events','writings','photography','routine'];
+const PAGES = ['home','events','writings','photography','routine','universities'];
 
 function goToPage(pageId, skipHash){
   if(!PAGES.includes(pageId)) pageId = 'home';
@@ -1367,3 +1367,371 @@ document.getElementById('unlockInput').addEventListener('keydown', (e)=>{
     // draw a single static frame, no loop
   }
 })();
+
+/* ============================================================
+   PUBLIC UNIVERSITIES OF BANGLADESH - DATA + RENDER
+   ============================================================ */
+const UNI_DATA = [
+  {
+    id: 'du',
+    name: 'University of Dhaka (DU)',
+    short: 'DU',
+    location: 'Dhaka',
+    tier: 'flagship',
+    category: 'general',
+    established: '1921',
+    blurb: 'The oldest and largest public university in Bangladesh, often called the "Oxford of the East." Home to 13 faculties, 83 departments, and 12 institutes, including the prestigious IBA.',
+    faculties: [
+      {
+        name: 'Faculty of Arts',
+        departments: ['Bangla', 'English', 'Arabic', 'Islamic Studies', 'Persian Language and Literature', 'Urdu', 'Sanskrit and Pali', 'History', 'Islamic History and Culture', 'Philosophy', 'Linguistics', 'Theatre and Performance Studies', 'Music', 'Information Science and Library Management', 'World Religions and Culture']
+      },
+      {
+        name: 'Faculty of Social Sciences',
+        departments: ['Economics', 'Political Science', 'International Relations', 'Sociology', 'Public Administration', 'Mass Communication and Journalism', 'Anthropology', 'Population Sciences', 'Peace and Conflict Studies', 'Women and Gender Studies', 'Development Studies', 'Criminology', 'Television, Film and Photography', 'Communication Disorders', 'Printing and Publication Studies']
+      },
+      {
+        name: 'Faculty of Law',
+        departments: ['Law']
+      },
+      {
+        name: 'Faculty of Science',
+        departments: ['Mathematics', 'Physics', 'Chemistry', 'Statistics', 'Soil, Water and Environment', 'Geology', 'Applied Mathematics', 'Theoretical Physics']
+      },
+      {
+        name: 'Faculty of Biological Sciences',
+        departments: ['Botany', 'Zoology', 'Psychology', 'Genetic Engineering and Biotechnology', 'Microbiology', 'Biochemistry and Molecular Biology', 'Clinical Psychology', 'Fisheries', 'Soil, Water and Environment']
+      },
+      {
+        name: 'Faculty of Business Studies',
+        departments: ['Accounting and Information Systems', 'Management', 'Marketing', 'Finance', 'Banking and Insurance', 'Management Information Systems', 'International Business', 'Tourism and Hospitality Management']
+      },
+      {
+        name: 'Faculty of Pharmacy',
+        departments: ['Pharmacy']
+      },
+      {
+        name: 'Faculty of Earth and Environmental Sciences',
+        departments: ['Geography and Environment', 'Geology', 'Disaster Science and Climate Resilience', 'Oceanography']
+      },
+      {
+        name: 'Faculty of Engineering and Technology',
+        departments: ['Computer Science and Engineering', 'Applied Chemistry and Chemical Engineering', 'Robotics and Mechatronics Engineering', 'Electrical and Electronic Engineering', 'Nuclear Engineering', 'Biomedical Engineering']
+      },
+      {
+        name: 'Faculty of Education',
+        departments: ['Institute of Education and Research (IER)']
+      },
+      {
+        name: 'Faculty of Fine Arts',
+        departments: ['Drawing and Painting', 'Sculpture', 'Graphic Design', 'Printmaking', 'Ceramics', 'Oriental Art', 'Crafts', 'History of Art']
+      },
+      {
+        name: 'Faculty of Medicine',
+        departments: ['Dhaka Medical College and affiliated medical/dental colleges under DU']
+      },
+      {
+        name: 'Key Institutes',
+        departments: ['Institute of Business Administration (IBA)', 'Institute of Education and Research (IER)', 'Institute of Health Economics', 'Institute of Statistical Research and Training (ISRT)', 'Institute of Nutrition and Food Science', 'Institute of Social Welfare and Research', 'Institute of Energy', 'Institute of Disaster Management and Vulnerability Studies', 'Institute of Information Technology (IIT)', 'Institute of Modern Languages', 'South Asian Institute of Policy and Governance', 'Bangabandhu Institute for Development Studies']
+      }
+    ],
+    careers: {
+      local: ['BCS (Administration, Foreign Affairs, Police, Customs, and all other cadres - DU graduates dominate BCS cadre intake every year)', 'Bangladesh Bank and commercial/state-owned banks (especially from Economics, Accounting, Finance, IBA)', 'Judiciary and legal practice (from Faculty of Law, after Bar Council enrollment)', 'University and college teaching, research institutes (BIDS, BRAC Institutes)', 'Journalism and media houses (Prothom Alo, The Daily Star, television channels)', 'NGOs and development sector (BRAC, World Bank Dhaka office, UN agencies)', 'Corporate roles in telecom, FMCG, pharma (Grameenphone, Unilever, Square)', 'Civil service and policy think tanks (PRI, CPD)'],
+      abroad: ['Graduate school (MS/MPhil/PhD) in the US, UK, Australia, and Europe, especially from Economics, Physics, CSE, and IBA, often with Fulbright, Chevening, or Commonwealth scholarships', 'UN and international organization roles for IR and Development Studies graduates', 'IT and software roles abroad for CSE and Applied Mathematics graduates', 'International law and human rights work for Law graduates, including ICC and ICJ internships', 'Global consulting and finance (McKinsey, big banks) for top IBA graduates']
+    }
+  },
+  {
+    id: 'buet',
+    name: 'Bangladesh University of Engineering and Technology (BUET)',
+    short: 'BUET',
+    location: 'Dhaka (Palashi)',
+    tier: 'flagship',
+    category: 'engineering',
+    established: '1962 (as EPUET), renamed 1962',
+    blurb: 'The most prestigious engineering and architecture university in Bangladesh. Admission is the most competitive in the country, with around 1,300 seats across 13 undergraduate departments under 6 faculties.',
+    faculties: [
+      {
+        name: 'Faculty of Civil Engineering',
+        departments: ['Civil Engineering', 'Water Resources Engineering', 'Building Engineering and Construction Management']
+      },
+      {
+        name: 'Faculty of Electrical and Electronic Engineering',
+        departments: ['Electrical and Electronic Engineering (EEE)', 'Computer Science and Engineering (CSE)', 'Biomedical Engineering (BME)']
+      },
+      {
+        name: 'Faculty of Mechanical Engineering',
+        departments: ['Mechanical Engineering (ME)', 'Industrial and Production Engineering (IPE)', 'Naval Architecture and Marine Engineering (NAME)']
+      },
+      {
+        name: 'Faculty of Chemical and Materials Engineering',
+        departments: ['Chemical Engineering', 'Materials and Metallurgical Engineering (MME)', 'Leather Engineering', 'Petroleum and Mining Engineering']
+      },
+      {
+        name: 'Faculty of Architecture and Planning',
+        departments: ['Architecture', 'Urban and Regional Planning (URP)']
+      },
+      {
+        name: 'Faculty of Science (postgraduate research)',
+        departments: ['Physics', 'Chemistry', 'Mathematics', 'Humanities (Economics, language)']
+      }
+    ],
+    careers: {
+      local: ['Engineering roles in WASA, REB, PDB, Roads and Highways Department, and other government bodies via BCS (Engineering cadres)', 'Telecom and tech companies (Grameenphone, Robi, local software firms) for EEE and CSE graduates', 'Construction and real estate firms for Civil and Building Engineering graduates', 'Power and energy sector (Power Grid Company, private power plants)', 'Consulting engineering firms and infrastructure projects (Padma Bridge, metro rail)', 'University faculty positions at BUET, public, and private universities'],
+      abroad: ['MS/PhD programs in the US, Canada, Germany, South Korea, and Australia - BUET has one of the strongest track records of any Bangladeshi university for graduate admission with funding', 'Roles at global tech companies (Google, Microsoft, Amazon) for CSE and EEE graduates, often after a master\'s abroad', 'Oil, gas, and shipping industry roles in the Middle East and Southeast Asia for Petroleum, Mining, and Naval Architecture graduates', 'International engineering consultancies and multinational construction firms', 'A large share of BUET graduates (commonly cited around 50-60%) pursue higher studies abroad, with many settling internationally']
+    }
+  },
+  {
+    id: 'iba',
+    name: 'Institute of Business Administration, University of Dhaka (IBA-DU)',
+    short: 'IBA',
+    location: 'Dhaka (DU campus)',
+    tier: 'flagship',
+    category: 'business',
+    established: '1966',
+    blurb: 'Widely regarded as the best business school in Bangladesh. Founded with Ford Foundation and Indiana University support, IBA produces the country\'s most sought-after BBA and MBA graduates.',
+    faculties: [
+      {
+        name: 'Undergraduate Program',
+        departments: ['Bachelor of Business Administration (BBA) - 4-year, majors/minors in Accounting, Finance, Human Resource Management, Information Systems, Marketing, and Operations Management']
+      },
+      {
+        name: 'Graduate Programs',
+        departments: ['Master of Business Administration (MBA), full-time and part-time', 'Executive MBA (EMBA)', 'MPhil and PhD in Business Administration', 'Postgraduate Diploma in Garment Business (PGD-GB)', 'Advanced Certificate in Business Administration (ACBA)']
+      }
+    ],
+    careers: {
+      local: ['Management trainee and leadership programs at top FMCG and conglomerates (Unilever, BAT Bangladesh, Square, ACI)', 'Investment banking, corporate finance, and asset management at local and multinational banks', 'Strategy and consulting roles at firms operating in Bangladesh', 'Brand management and marketing at telecom and consumer goods companies', 'Entrepreneurship and startup founding, IBA has a strong record of producing founders', 'Senior roles in development finance institutions and the central bank'],
+      abroad: ['Admission into top global MBA programs (Harvard, Wharton, INSEAD, LBS) after a few years of work experience', 'Roles at global consulting firms (McKinsey, BCG, Bain) and investment banks for graduates who study abroad', 'Multinational corporate roles in Singapore, the Middle East, and Western markets', 'Development sector roles at the World Bank, ADB, and UN agencies, often after a master\'s in public policy or development economics']
+    }
+  },
+  {
+    id: 'medical',
+    name: 'Government Medical Colleges of Bangladesh',
+    short: 'Medical',
+    location: 'All divisions',
+    tier: 'flagship',
+    category: 'medical',
+    established: 'Earliest: Dhaka Medical College, 1946',
+    blurb: 'Bangladesh has 37 government medical colleges offering the 5-year MBBS degree, regulated by the Bangladesh Medical and Dental Council (BM&DC). Admission is through a single nationwide MBBS admission test. The top names include Dhaka Medical College (DMC), Sir Salimullah Medical College, Chittagong Medical College, Rajshahi Medical College, Sylhet MAG Osmani Medical College, Mymensingh Medical College, and Shaheed Suhrawardy Medical College. Bangabandhu Sheikh Mujib Medical University (BSMMU) is the country\'s only dedicated medical university, offering postgraduate degrees (MD, MS, FCPS, MPhil, PhD) only.',
+    faculties: [
+      {
+        name: 'Core Degree Programs',
+        departments: ['MBBS (Bachelor of Medicine and Bachelor of Surgery) - 5 years plus 1-year internship', 'BDS (Bachelor of Dental Surgery) - 4 years plus 1-year internship', 'B.Sc. in Nursing and related allied health programs at select colleges']
+      },
+      {
+        name: 'Major Government Medical Colleges',
+        departments: ['Dhaka Medical College (DMC), Dhaka - the largest, established 1946', 'Sir Salimullah Medical College, Dhaka', 'Shaheed Suhrawardy Medical College, Dhaka', 'Mymensingh Medical College', 'Chittagong Medical College', 'Rajshahi Medical College', 'Sylhet M.A.G. Osmani Medical College', 'Sher-e-Bangla Medical College, Barishal', 'Rangpur Medical College', 'Cumilla Medical College', 'Khulna Medical College', 'Faridpur Medical College', 'Shaheed Ziaur Rahman Medical College, Bogura', 'Plus 23+ additional government medical colleges across all districts']
+      },
+      {
+        name: 'Postgraduate-only University',
+        departments: ['Bangabandhu Sheikh Mujib Medical University (BSMMU) - MD, MS, MPhil, PhD, FCPS, Diploma courses, the apex postgraduate medical institution']
+      }
+    ],
+    careers: {
+      local: ['Bangladesh Civil Service (Health) cadre, posting as medical officers in government hospitals and upazila health complexes', 'Specialization via FCPS, MD, or MS at BSMMU and other institutions, leading to consultant and specialist roles', 'Private practice and chamber consultancy after specialization', 'Faculty positions at medical colleges', 'Roles in public health programs run by the Directorate General of Health Services (DGHS) and NGOs (icddr,b, BRAC Health)'],
+      abroad: ['USMLE pathway to residency and practice in the United States', 'PLAB pathway to practice in the United Kingdom', 'Fellowship and specialist training in Australia, Canada, and the Gulf countries', 'Research and academic medicine positions abroad after MPhil/PhD or further specialization', 'WHO and international health organization roles for public health-focused graduates']
+    }
+  },
+  {
+    id: 'issb',
+    name: 'ISSB and the Bangladesh Armed Forces (Army, Navy, Air Force)',
+    short: 'ISSB / Defense',
+    location: 'Nationwide (ISSB centres, cadet colleges, BMA, BNA, BAFA)',
+    tier: 'flagship',
+    category: 'defense',
+    established: 'ISSB formed 1976',
+    blurb: 'Not a university, but the gateway into a commissioned officer career in the Bangladesh Army, Navy, and Air Force. The Inter Services Selection Board (ISSB) is a 4-day assessment of intelligence, leadership, and personality that every officer candidate must pass after initial written/medical screening.',
+    faculties: [
+      {
+        name: 'Entry Pathways',
+        departments: ['Bangladesh Military Academy (BMA) - Long Course, for direct entry officer cadets after HSC', 'BMA Special Course - for graduates with a bachelor\'s degree', 'Direct Entry Officer (DEO) schemes in technical, medical, and administrative branches', 'Bangladesh Naval Academy (BNA) for Navy officer cadets, including Nautical Science and Marine Engineering streams', 'Bangladesh Air Force Academy (BAFA) for pilot (GD(P)), engineering, and ground branch officers', 'Officer entry through Bangladesh University of Professionals (BUP) for those already holding relevant degrees']
+      },
+      {
+        name: 'Selection Process',
+        departments: ['Initial written and physical screening by the respective service headquarters', 'ISSB 4-day assessment: intelligence tests, Picture Perception and Discussion Test (PPDT), group tasks, individual obstacles, psychological tests, and final interview', 'Medical board examination for ISSB-recommended ("Green Card") candidates', 'Final merit list and academy enrollment']
+      }
+    ],
+    careers: {
+      local: ['Commissioned officer career in the Army, Navy, or Air Force, with a structured promotion path from Lieutenant/equivalent upward', 'Specialist branches: Engineers, Signals, Artillery, Armoured Corps, Army Medical Corps, Education Corps, and more', 'Postings with UN peacekeeping missions abroad as part of Bangladesh\'s armed forces contingents', 'Transition into Bangladesh University of Professionals (BUP) for academic/teaching roles after service', 'Post-retirement career opportunities in government, security consultancy, and corporate management'],
+      abroad: ['United Nations peacekeeping deployments worldwide as part of Bangladesh\'s major contribution to UN missions', 'Joint training and exchange programs with foreign military academies (UK Sandhurst-linked training, US, China, Turkey)', 'Defense attache and diplomatic postings at Bangladesh missions abroad for senior officers', 'International security and defense consultancy after retirement']
+    }
+  }
+];
+
+const UNI_LIGHT = [
+  { name: 'Rajshahi University (RU)', location: 'Rajshahi', category: 'general', note: 'Second-oldest public university (1953), strong in Social Sciences, Science, and Bangla.' },
+  { name: 'University of Chittagong (CU)', location: 'Chattogram', category: 'general', note: 'Major general university (1966) with a large, scenic hill-tract campus.' },
+  { name: 'Jahangirnagar University (JU)', location: 'Savar, Dhaka', category: 'general', note: 'Known for residential campus life, strong in Computer Science, Drama, and Social Sciences.' },
+  { name: 'Shahjalal University of Science and Technology (SUST)', location: 'Sylhet', category: 'science_tech', note: 'Leading science and technology university, strong CSE and Genetic Engineering programs.' },
+  { name: 'Khulna University (KU)', location: 'Khulna', category: 'general', note: 'Discipline-based (not departmental) structure; strong in Architecture and Disaster Management.' },
+  { name: 'Bangladesh Agricultural University (BAU)', location: 'Mymensingh', category: 'agriculture', note: 'Oldest and largest agricultural university (1961), strong Veterinary and Agriculture faculties.' },
+  { name: 'Bangladesh University of Professionals (BUP)', location: 'Dhaka (Mirpur Cantonment)', category: 'defense', note: 'Run under the Armed Forces Division; offers civilian and defense-linked degrees, including affiliated medical colleges.' },
+  { name: 'Bangladesh University of Textiles (BUTEX)', location: 'Dhaka', category: 'engineering', note: 'Premier textile engineering university, closely linked to the country\'s RMG export industry.' },
+  { name: 'Islamic University, Bangladesh', location: 'Kushtia', category: 'general', note: 'General public university with Science, Arts, and Islamic Studies faculties.' },
+  { name: 'Jagannath University (JnU)', location: 'Dhaka (old city)', category: 'general', note: 'Converted from Jagannath College in 2005; rapidly growing science and business faculties.' },
+  { name: 'Comilla University', location: 'Cumilla', category: 'general', note: 'General university serving the greater Comilla region.' },
+  { name: 'Jessore University of Science and Technology (JUST)', location: 'Jashore', category: 'science_tech', note: 'Science and technology focused, southwestern Bangladesh.' },
+  { name: 'Noakhali Science and Technology University (NSTU)', location: 'Noakhali', category: 'science_tech', note: 'Science and technology university for the southeastern coastal region.' },
+  { name: 'Patuakhali Science and Technology University (PSTU)', location: 'Patuakhali', category: 'agriculture', note: 'Agriculture, fisheries, and science and technology faculties for the coastal south.' },
+  { name: 'Begum Rokeya University, Rangpur (BRUR)', location: 'Rangpur', category: 'general', note: 'General university serving the Rangpur division, named after the pioneering feminist writer.' },
+  { name: 'Pabna University of Science and Technology (PUST)', location: 'Pabna', category: 'science_tech', note: 'Science and technology university in northern Bangladesh.' },
+  { name: 'Mawlana Bhashani Science and Technology University (MBSTU)', location: 'Tangail', category: 'science_tech', note: 'Science and technology university named after Maulana Bhashani.' },
+  { name: 'Hajee Mohammad Danesh Science and Technology University (HSTU)', location: 'Dinajpur', category: 'science_tech', note: 'Agriculture-linked science and technology university in the northwest.' },
+  { name: 'Bangabandhu Sheikh Mujibur Rahman Science and Technology University', location: 'Gopalganj', category: 'science_tech', note: 'Named after the Father of the Nation, general science and technology focus.' },
+  { name: 'Khulna University of Engineering and Technology (KUET)', location: 'Khulna', category: 'engineering', note: 'One of the four major engineering universities alongside BUET, RUET, and CUET.' },
+  { name: 'Rajshahi University of Engineering and Technology (RUET)', location: 'Rajshahi', category: 'engineering', note: 'Leading engineering university for the northern region.' },
+  { name: 'Chittagong University of Engineering and Technology (CUET)', location: 'Chattogram', category: 'engineering', note: 'Leading engineering university for the southeastern region.' },
+  { name: 'Dhaka University of Engineering and Technology (DUET)', location: 'Gazipur', category: 'engineering', note: 'Caters mainly to diploma-holding engineers pursuing bachelor degrees.' },
+  { name: 'Bangabandhu Sheikh Mujibur Rahman Agricultural University (BSMRAU)', location: 'Gazipur', category: 'agriculture', note: 'Postgraduate-focused agricultural university.' },
+  { name: 'Sher-e-Bangla Agricultural University (SAU)', location: 'Dhaka', category: 'agriculture', note: 'Urban agricultural university in the capital.' },
+  { name: 'Sylhet Agricultural University', location: 'Sylhet', category: 'agriculture', note: 'Agricultural university for the northeastern haor region.' },
+  { name: 'Chattogram Veterinary and Animal Sciences University (CVASU)', location: 'Chattogram', category: 'agriculture', note: 'Specialized veterinary, animal, and fisheries science university.' },
+  { name: 'Bangabandhu Sheikh Mujibur Rahman Maritime University (BSMRMU)', location: 'Dhaka', category: 'maritime', note: 'Maritime studies, nautical science, and marine engineering.' },
+  { name: 'Bangabandhu Sheikh Mujib Medical University (BSMMU)', location: 'Dhaka', category: 'medical', note: 'Country\'s only fully postgraduate medical university (MD, MS, FCPS, PhD only).' },
+  { name: 'Chittagong Medical University', location: 'Chattogram', category: 'medical', note: 'Oversees government and private medical/dental colleges in Chattogram division.' },
+  { name: 'Rajshahi Medical University', location: 'Rajshahi', category: 'medical', note: 'Oversees medical/dental colleges in Rajshahi division.' },
+  { name: 'Sylhet Medical University', location: 'Sylhet', category: 'medical', note: 'Oversees medical/dental colleges in Sylhet division.' },
+  { name: 'National University, Bangladesh', location: 'Gazipur', category: 'affiliating', note: 'World\'s largest affiliating university by enrollment; oversees most government and private degree colleges nationwide.' },
+  { name: 'Bangladesh Open University', location: 'Gazipur', category: 'distance', note: 'Distance and open learning university offering SSC-to-postgraduate level programs nationwide.' },
+  { name: 'Islamic Arabic University', location: 'Dhaka', category: 'islamic', note: 'Specialized university for Arabic and Islamic studies, affiliated madrasah education.' },
+  { name: 'Barisal University', location: 'Barishal', category: 'general', note: 'General public university serving the Barishal division.' },
+  { name: 'Pirojpur Science and Technology University', location: 'Pirojpur', category: 'science_tech', note: 'Newer science and technology university in the southern region.' },
+  { name: 'Joypurhat Science and Technology University', location: 'Joypurhat', category: 'science_tech', note: 'Newer science and technology university in the northern region.' },
+  { name: 'Naogaon Science and Technology University', location: 'Naogaon', category: 'science_tech', note: 'Newer science and technology university in the northern region.' },
+  { name: 'Habiganj Science and Technology University', location: 'Habiganj', category: 'science_tech', note: 'Newer science and technology university in the northeastern region.' },
+  { name: 'Sunamganj Science and Technology University', location: 'Sunamganj', category: 'science_tech', note: 'Newer science and technology university in the haor region.' },
+  { name: 'Chandpur Science and Technology University', location: 'Chandpur', category: 'science_tech', note: 'Newer science and technology university in the southeastern region.' },
+  { name: 'Brahmanbaria Science and Technology University', location: 'Brahmanbaria', category: 'science_tech', note: 'Newer science and technology university in the southeastern region.' }
+];
+
+const UNI_CATEGORY_LABELS = {
+  flagship: 'Flagship - Deep Dive',
+  general: 'General',
+  engineering: 'Engineering',
+  science_tech: 'Science and Technology',
+  agriculture: 'Agriculture',
+  medical: 'Medical',
+  defense: 'Defense',
+  maritime: 'Maritime',
+  business: 'Business',
+  affiliating: 'Affiliating',
+  distance: 'Open / Distance',
+  islamic: 'Islamic Studies'
+};
+
+function uniFilterTags(){
+  const tags = ['all', 'flagship', 'general', 'engineering', 'science_tech', 'agriculture', 'medical', 'defense', 'business'];
+  const container = document.getElementById('uniFilters');
+  if(!container) return;
+  container.innerHTML = tags.map(t=>{
+    const label = t === 'all' ? 'All' : (UNI_CATEGORY_LABELS[t] || t);
+    return `<button type="button" class="uni-filter-btn${t==='all' ? ' active' : ''}" data-cat="${t}" onclick="setUniFilter('${t}')">${label}</button>`;
+  }).join('');
+}
+
+let UNI_ACTIVE_FILTER = 'all';
+function setUniFilter(cat){
+  UNI_ACTIVE_FILTER = cat;
+  document.querySelectorAll('.uni-filter-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.cat === cat);
+  });
+  renderUniversities();
+}
+
+function uniMatchesSearch(haystack, query){
+  if(!query) return true;
+  return haystack.toLowerCase().includes(query.toLowerCase());
+}
+
+function renderUniversities(){
+  const query = (document.getElementById('uniSearchInput')||{}).value || '';
+  const resultsEl = document.getElementById('uniResults');
+  if(!resultsEl) return;
+
+  let deepHtml = '';
+  UNI_DATA.forEach(u=>{
+    if(UNI_ACTIVE_FILTER !== 'all' && UNI_ACTIVE_FILTER !== 'flagship' && u.category !== UNI_ACTIVE_FILTER) return;
+    const allDeptText = u.faculties.flatMap(f=>f.departments).join(' ') + ' ' + u.name + ' ' + u.blurb + ' ' + (u.careers.local.join(' ')) + ' ' + (u.careers.abroad.join(' '));
+    if(!uniMatchesSearch(allDeptText, query)) return;
+    deepHtml += renderUniCard(u);
+  });
+
+  let lightHtml = '';
+  const lightMatches = UNI_LIGHT.filter(u=>{
+    if(UNI_ACTIVE_FILTER === 'flagship') return false;
+    if(UNI_ACTIVE_FILTER !== 'all' && u.category !== UNI_ACTIVE_FILTER) return false;
+    const text = u.name + ' ' + u.location + ' ' + u.note;
+    return uniMatchesSearch(text, query);
+  });
+  if(lightMatches.length){
+    lightHtml = `<div class="uni-light-grid">` + lightMatches.map(u=>`
+      <div class="uni-light-card">
+        <h4>${u.name}</h4>
+        <span class="uni-light-loc">${u.location} &middot; ${UNI_CATEGORY_LABELS[u.category]||u.category}</span>
+        <p>${u.note}</p>
+      </div>
+    `).join('') + `</div>`;
+  }
+
+  if(!deepHtml && !lightHtml){
+    resultsEl.innerHTML = `<p class="uni-empty">No universities, departments, or career fields matched your search. Try a different term.</p>`;
+    return;
+  }
+
+  resultsEl.innerHTML =
+    (deepHtml ? `<div class="uni-deep-list">${deepHtml}</div>` : '') +
+    (lightHtml ? `<h3 class="uni-light-heading">Other Public Universities</h3>${lightHtml}` : '');
+}
+
+function renderUniCard(u){
+  const facultyHtml = u.faculties.map(f=>`
+    <div class="uni-faculty">
+      <h5>${f.name}</h5>
+      <p class="uni-dept-list">${f.departments.join(' &middot; ')}</p>
+    </div>
+  `).join('');
+
+  return `
+    <div class="uni-card" id="uni-${u.id}">
+      <div class="uni-card-head">
+        <div>
+          <h3>${u.name}</h3>
+          <span class="uni-meta">${u.location} &middot; Est. ${u.established}</span>
+        </div>
+        <button type="button" class="uni-toggle-btn" onclick="toggleUniCard('${u.id}')" id="uniToggle-${u.id}">View details</button>
+      </div>
+      <p class="uni-blurb">${u.blurb}</p>
+      <div class="uni-card-body" id="uniBody-${u.id}" hidden>
+        <div class="uni-faculties">
+          ${facultyHtml}
+        </div>
+        <div class="uni-careers">
+          <div class="uni-career-col">
+            <h5>Career Opportunities in Bangladesh</h5>
+            <ul>${u.careers.local.map(c=>`<li>${c}</li>`).join('')}</ul>
+          </div>
+          <div class="uni-career-col">
+            <h5>Career Opportunities Abroad</h5>
+            <ul>${u.careers.abroad.map(c=>`<li>${c}</li>`).join('')}</ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleUniCard(id){
+  const body = document.getElementById('uniBody-'+id);
+  const btn = document.getElementById('uniToggle-'+id);
+  if(!body) return;
+  const isHidden = body.hidden;
+  body.hidden = !isHidden;
+  if(btn) btn.textContent = isHidden ? 'Hide details' : 'View details';
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  if(document.getElementById('uniFilters')){
+    uniFilterTags();
+    renderUniversities();
+  }
+});
