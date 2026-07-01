@@ -145,18 +145,19 @@ function renderPeopleList(type, gridId){
     grid.innerHTML = `<div class="empty-state">No ${type} added yet. Use the button above to add one.</div>`;
     return;
   }
-  list.forEach(p=>{
+  list.forEach((p, i)=>{
     const card = document.createElement('div');
-    card.className = 'person-card fade-up visible';
+    card.className = 'person-card';
     const photoSrc = p.photo && p.photo.trim() ? p.photo : placeholderAvatar(p.name);
     card.innerHTML = `
+      <span class="person-index">${String(i+1).padStart(2,'0')}</span>
       <img class="person-photo" src="${escapeHtml(photoSrc)}" alt="${escapeHtml(p.name)}" onerror="this.src='${placeholderAvatar(p.name)}'">
+      <button class="btn small edit-btn edit-only" onclick="openPersonModal('${type}','${p.id}')">✏️ Edit</button>
       <div class="person-info">
         <div class="person-name">${escapeHtml(p.name)}</div>
         <div class="person-role">${escapeHtml(p.role)}</div>
+        <div class="person-bio">${escapeHtml(p.bio)}</div>
       </div>
-      <button class="btn small edit-btn edit-only" onclick="openPersonModal('${type}','${p.id}')">✏️ Edit</button>
-      <div class="person-bio">${escapeHtml(p.bio)}</div>
     `;
     grid.appendChild(card);
   });
