@@ -932,12 +932,11 @@ updateScrollProgress();
 
   function rand(a,b){ return a + Math.random()*(b-a); }
 
-  // Comet head: kept as a tight, distance-capped glow (not raw event
-  // history) so fast mouse flicks don't stretch it into a long line -
-  // the head trail is trimmed by physical pixel length, not event count.
-  const HEAD_MAX_LEN = 34; // max px of head streak, regardless of speed
-  const headTrail = []; // [{x,y,arc}]  arc = cumulative distance from tip
-  let headArc = 0;
+  // Comet heading: smoothed direction of travel, used to draw a real
+  // fanned tail (like a comet illustration) rather than a trail of past
+  // cursor positions - so it doesn't stretch into a line on fast moves.
+  let headingX = -1, headingY = 0; // unit vector, tail points opposite to this
+  let travelSpeed = 0; // smoothed pixel-distance-per-move, drives tail length
 
   // Particle sparks flung off behind the comet head. These persist for
   // several seconds and drift to a slow stop rather than vanishing quickly -
@@ -954,11 +953,16 @@ updateScrollProgress();
     const dx = mouseX - prevX, dy = mouseY - prevY;
     const dist = Math.sqrt(dx*dx + dy*dy);
 
-    headArc += dist;
-    headTrail.push({ x: mouseX, y: mouseY, arc: headArc });
-    while(headTrail.length > 1 && (headArc - headTrail[0].arc) > HEAD_MAX_LEN){
-      headTrail.shift();
+    if(dist > 0.4){
+      const invD = 1/dist;
+      // Smoothly steer heading toward the new direction instead of snapping,
+      // so the tail sweeps rather than flickers when direction changes fast.
+      headingX += (dx*invD - headingX) * 0.35;
+      headingY += (dy*invD - headingY) * 0.35;
+      const hl = Math.sqrt(headingX*headingX + headingY*headingY) || 1;
+      headingX /= hl; headingY /= hl;
     }
+    travelSpeed += (Math.min(dist, 60) - travelSpeed) * 0.3;
 
     // Spawn a modest, capped number of particles per move event (not scaled
     // by distance) so a fast flick sheds a small burst rather than a long
@@ -1000,36 +1004,53 @@ updateScrollProgress();
     ctx.clearRect(0, 0, W, H);
     const col = getColors();
 
-    // ---- Comet head: tapered glowing streak, length-capped by distance ----
-    const n = headTrail.length;
-    if(n > 1){
-      const tipArc = headTrail[n-1].arc;
-      const tailArc = headTrail[0].arc;
-      const trailLen = tipArc - tailArc || 1;
-      for(let i = 1; i < n; i++){
-        const p0 = headTrail[i-1];
-        const p1 = headTrail[i];
-        const t = (p1.arc - tailArc) / trailLen; // 0 = tail, 1 = head
-        ctx.beginPath();
-        ctx.moveTo(p0.x, p0.y);
-        ctx.lineTo(p1.x, p1.y);
-        ctx.strokeStyle = `rgba(${col.gold},${(t*0.5).toFixed(3)})`;
-        ctx.lineWidth = isDown ? 2 + t*2 : 2.5 + t*3;
-        ctx.lineCap = 'round';
-        ctx.stroke();
-      }
-      // Bright core glow at the very tip
-      const tip = headTrail[n-1];
-      const glowR = isPointer ? 16 : isDown ? 8 : 12;
-      const grad = ctx.createRadialGradient(tip.x, tip.y, 0, tip.x, tip.y, glowR);
-      grad.addColorStop(0, `rgba(${col.gold},0.55)`);
-      grad.addColorStop(0.5, `rgba(${col.membrane},0.22)`);
-      grad.addColorStop(1, `rgba(${col.membrane},0)`);
-      ctx.beginPath();
-      ctx.fillStyle = grad;
-      ctx.arc(tip.x, tip.y, glowR, 0, Math.PI*2);
-      ctx.fill();
-    }
+    // Ease travel speed back down when the cursor is idle so the tail
+    // shrinks to a small point at rest instead of hanging around fixed-length.
+    travelSpeed *= 0.94;
+
+    // ---- Comet tail: fanned, feathered shape pointing back along heading ----
+    const tailLen = 14 + Math.min(travelSpeed, 60) * 1.6; // grows with speed, shrinks at rest
+    const tailWidth = isPointer ? 10 : 7;
+    const tx = -headingX, ty = -headingY; // tail direction = opposite of travel
+    const px_ = -ty, py_ = tx; // perpendicular for fan width
+
+    const tailTipX = mouseX + tx * tailLen;
+    const tailTipY = mouseY + ty * tailLen;
+    const baseLX = mouseX + px_ * tailWidth * 0.4;
+    const baseLY = mouseY + py_ * tailWidth * 0.4;
+    const baseRX = mouseX - px_ * tailWidth * 0.4;
+    const baseRY = mouseY - py_ * tailWidth * 0.4;
+    // control points bow the fan outward for a feathered, curved silhouette
+    const midX = mouseX + tx * tailLen * 0.55;
+    const midY = mouseY + ty * tailLen * 0.55;
+    const ctrlLX = midX + px_ * tailWidth * 1.3;
+    const ctrlLY = midY + py_ * tailWidth * 1.3;
+    const ctrlRX = midX - px_ * tailWidth * 1.3;
+    const ctrlRY = midY - py_ * tailWidth * 1.3;
+
+    const tailGrad = ctx.createLinearGradient(mouseX, mouseY, tailTipX, tailTipY);
+    tailGrad.addColorStop(0, `rgba(${col.gold},0.55)`);
+    tailGrad.addColorStop(0.4, `rgba(${col.membrane},0.28)`);
+    tailGrad.addColorStop(1, `rgba(${col.membrane},0)`);
+
+    ctx.beginPath();
+    ctx.moveTo(baseLX, baseLY);
+    ctx.quadraticCurveTo(ctrlLX, ctrlLY, tailTipX, tailTipY);
+    ctx.quadraticCurveTo(ctrlRX, ctrlRY, baseRX, baseRY);
+    ctx.closePath();
+    ctx.fillStyle = tailGrad;
+    ctx.fill();
+
+    // Bright core glow at the head
+    const glowR = isPointer ? 15 : isDown ? 7 : 11;
+    const grad = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, glowR);
+    grad.addColorStop(0, `rgba(${col.gold},0.7)`);
+    grad.addColorStop(0.5, `rgba(${col.membrane},0.28)`);
+    grad.addColorStop(1, `rgba(${col.membrane},0)`);
+    ctx.beginPath();
+    ctx.fillStyle = grad;
+    ctx.arc(mouseX, mouseY, glowR, 0, Math.PI*2);
+    ctx.fill();
 
     // ---- Trailing particles: drift slowly, shrink, and fade over several seconds ----
     for(let i = particles.length - 1; i >= 0; i--){
@@ -1219,59 +1240,57 @@ document.getElementById('unlockInput').addEventListener('keydown', (e)=>{
 
   function rand(a,b){ return a + Math.random()*(b-a); }
 
-  /* ---- Cursor wave: soft glowing bands that spread outward from cursor
-     movement, like a slow ripple through water rather than a thin ring.
-     Each wave is a filled radial band (soft leading edge, soft trailing
-     edge) so it reads as a visual "wave of light" instead of a stroked
-     circle. Spawn rate and expansion are both intentionally unhurried. */
-  const waveRipples = []; // {x,y,radius,alpha,maxRadius,band}
-  let lastWaveX = null, lastWaveY = null, lastWaveT = 0;
+  /* ---- Cursor wave: thin expanding ring outlines, triggered only when
+     the cursor starts moving and again when it comes to rest - not a
+     continuous stream while dragging across the screen. */
+  const waveRipples = []; // {x,y,radius,alpha,maxRadius}
+  let isMoving = false;
+  let stopTimer = null;
+  let lastMoveX = 0, lastMoveY = 0;
+
+  function spawnWave(x, y){
+    waveRipples.push({ x, y, radius: 4, maxRadius: rand(160, 240), alpha: 0.5 });
+    if(waveRipples.length > 6) waveRipples.shift();
+  }
 
   if(!reduceMotion && !window.matchMedia('(hover: none)').matches){
     window.addEventListener('mousemove', e=>{
-      const now = performance.now();
-      if(now - lastWaveT < 260) return; // much sparser spawn - a slow pulse, not a stream
-      const x = e.clientX, y = e.clientY;
-      if(lastWaveX !== null){
-        const d = Math.hypot(x - lastWaveX, y - lastWaveY);
-        if(d < 18) return; // only spawn on real, deliberate movement
+      lastMoveX = e.clientX; lastMoveY = e.clientY;
+
+      if(!isMoving){
+        isMoving = true;
+        spawnWave(lastMoveX, lastMoveY); // fires once as movement begins
       }
-      lastWaveX = x; lastWaveY = y; lastWaveT = now;
-      waveRipples.push({
-        x, y,
-        radius: 6,
-        maxRadius: rand(220, 340),
-        band: rand(50, 80),   // thickness of the soft wave band
-        alpha: 0.5
-      });
-      if(waveRipples.length > 6) waveRipples.shift();
+
+      clearTimeout(stopTimer);
+      stopTimer = setTimeout(()=>{
+        isMoving = false;
+        spawnWave(lastMoveX, lastMoveY); // fires once as movement settles
+      }, 140);
     }, { passive:true });
   }
 
   function updateAndDrawWaves(){
     for(let i = waveRipples.length - 1; i >= 0; i--){
       const w = waveRipples[i];
-      w.radius += 0.55; // slow, deliberate expansion - a wave rolling out, not a ping
-      w.alpha *= 0.985;
-      if(w.radius > w.maxRadius || w.alpha < 0.006){
+      w.radius += 0.7; // slow, deliberate expansion - a wave rolling out, not a ping
+      w.alpha *= 0.978;
+      if(w.radius > w.maxRadius || w.alpha < 0.008){
         waveRipples.splice(i,1);
         continue;
       }
-
-      // Filled soft band: transparent core -> peak brightness mid-band -> transparent edge.
-      // This is what makes it read as a rolling wave of light rather than an outline.
-      const inner = Math.max(0, w.radius - w.band);
-      const outer = w.radius;
-      const grad = ctx.createRadialGradient(w.x, w.y, inner, w.x, w.y, outer);
-      grad.addColorStop(0,   `rgba(201,83,106,0)`);
-      grad.addColorStop(0.45,`rgba(201,83,106,${w.alpha * 0.85})`);
-      grad.addColorStop(0.6, `rgba(139,139,214,${w.alpha * 0.5})`);
-      grad.addColorStop(1,   `rgba(139,139,214,0)`);
-
       ctx.beginPath();
-      ctx.fillStyle = grad;
-      ctx.arc(w.x, w.y, outer, 0, Math.PI*2);
-      ctx.fill();
+      ctx.strokeStyle = `rgba(201,83,106,${w.alpha})`;
+      ctx.lineWidth = 1.5;
+      ctx.arc(w.x, w.y, w.radius, 0, Math.PI*2);
+      ctx.stroke();
+
+      // inner companion ring in the membrane hue for a layered wavefront
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(139,139,214,${w.alpha * 0.65})`;
+      ctx.lineWidth = 1;
+      ctx.arc(w.x, w.y, Math.max(0, w.radius - 16), 0, Math.PI*2);
+      ctx.stroke();
     }
   }
 
@@ -1283,8 +1302,8 @@ document.getElementById('unlockInput').addEventListener('keydown', (e)=>{
       const ddx = px - w.x, ddy = py - w.y;
       const dist = Math.hypot(ddx, ddy);
       const edgeDist = Math.abs(dist - w.radius);
-      if(edgeDist < w.band && dist > 0.01){
-        const push = (1 - edgeDist/w.band) * w.alpha * 3;
+      if(edgeDist < 40 && dist > 0.01){
+        const push = (1 - edgeDist/40) * w.alpha * 3;
         dx += (ddx/dist) * push;
         dy += (ddy/dist) * push;
       }
