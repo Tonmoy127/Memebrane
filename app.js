@@ -1005,12 +1005,13 @@ updateScrollProgress();
     const col = getColors();
 
     // Ease travel speed back down when the cursor is idle so the tail
-    // shrinks to a small point at rest instead of hanging around fixed-length.
+    // shrinks toward a small resting length instead of hanging around
+    // at max size forever.
     travelSpeed *= 0.94;
 
     // ---- Comet tail: fanned, feathered shape pointing back along heading ----
-    const tailLen = 14 + Math.min(travelSpeed, 60) * 1.6; // grows with speed, shrinks at rest
-    const tailWidth = isPointer ? 10 : 7;
+    const tailLen = 34 + Math.min(travelSpeed, 60) * 2.4; // visible even at rest, grows with speed
+    const tailWidth = isPointer ? 16 : 12;
     const tx = -headingX, ty = -headingY; // tail direction = opposite of travel
     const px_ = -ty, py_ = tx; // perpendicular for fan width
 
@@ -1023,14 +1024,14 @@ updateScrollProgress();
     // control points bow the fan outward for a feathered, curved silhouette
     const midX = mouseX + tx * tailLen * 0.55;
     const midY = mouseY + ty * tailLen * 0.55;
-    const ctrlLX = midX + px_ * tailWidth * 1.3;
-    const ctrlLY = midY + py_ * tailWidth * 1.3;
-    const ctrlRX = midX - px_ * tailWidth * 1.3;
-    const ctrlRY = midY - py_ * tailWidth * 1.3;
+    const ctrlLX = midX + px_ * tailWidth * 1.5;
+    const ctrlLY = midY + py_ * tailWidth * 1.5;
+    const ctrlRX = midX - px_ * tailWidth * 1.5;
+    const ctrlRY = midY - py_ * tailWidth * 1.5;
 
     const tailGrad = ctx.createLinearGradient(mouseX, mouseY, tailTipX, tailTipY);
-    tailGrad.addColorStop(0, `rgba(${col.gold},0.55)`);
-    tailGrad.addColorStop(0.4, `rgba(${col.membrane},0.28)`);
+    tailGrad.addColorStop(0, `rgba(${col.gold},0.85)`);
+    tailGrad.addColorStop(0.4, `rgba(${col.membrane},0.5)`);
     tailGrad.addColorStop(1, `rgba(${col.membrane},0)`);
 
     ctx.beginPath();
@@ -1042,10 +1043,11 @@ updateScrollProgress();
     ctx.fill();
 
     // Bright core glow at the head
-    const glowR = isPointer ? 15 : isDown ? 7 : 11;
+    const glowR = isPointer ? 22 : isDown ? 12 : 18;
     const grad = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, glowR);
-    grad.addColorStop(0, `rgba(${col.gold},0.7)`);
-    grad.addColorStop(0.5, `rgba(${col.membrane},0.28)`);
+    grad.addColorStop(0, `rgba(255,240,235,0.95)`);
+    grad.addColorStop(0.35, `rgba(${col.gold},0.8)`);
+    grad.addColorStop(0.7, `rgba(${col.membrane},0.35)`);
     grad.addColorStop(1, `rgba(${col.membrane},0)`);
     ctx.beginPath();
     ctx.fillStyle = grad;
