@@ -1211,7 +1211,7 @@ document.getElementById('unlockInput').addEventListener('keydown', (e)=>{
      A lightweight ring-based wave system (not a full fluid sim, to stay
      performant). Every meaningful mouse move spawns a soft expanding ring;
      bubbles/particles near an active ring get gently pushed by it, and the
-     ring itself is drawn as a faint expanding stroke for the visible "wave"
+     ring itself is drawn as a visible expanding stroke for the wave effect
      on the background. */
   const waveRipples = []; // {x,y,radius,alpha,maxRadius}
   let lastWaveX = null, lastWaveY = null, lastWaveT = 0;
@@ -1219,35 +1219,38 @@ document.getElementById('unlockInput').addEventListener('keydown', (e)=>{
   if(!reduceMotion && !window.matchMedia('(hover: none)').matches){
     window.addEventListener('mousemove', e=>{
       const now = performance.now();
-      if(now - lastWaveT < 60) return; // throttle so ripples stay sparse, not spammy
+      if(now - lastWaveT < 40) return; // throttle so ripples stay sparse, not spammy
       const x = e.clientX, y = e.clientY;
       if(lastWaveX !== null){
         const d = Math.hypot(x - lastWaveX, y - lastWaveY);
-        if(d < 6) return; // ignore tiny jitters
+        if(d < 3) return; // ignore tiny jitters
       }
       lastWaveX = x; lastWaveY = y; lastWaveT = now;
-      waveRipples.push({ x, y, radius: 0, maxRadius: rand(140,220), alpha: 0.16 });
-      if(waveRipples.length > 10) waveRipples.shift();
+      waveRipples.push({ x, y, radius: 4, maxRadius: rand(160,260), alpha: 0.45 });
+      if(waveRipples.length > 14) waveRipples.shift();
     }, { passive:true });
   }
 
   function updateAndDrawWaves(){
     for(let i = waveRipples.length - 1; i >= 0; i--){
       const w = waveRipples[i];
-      w.radius += 0.55; // slow, deliberate expansion
-      w.alpha *= 0.99;
-      if(w.radius > w.maxRadius || w.alpha < 0.004){
+      w.radius += 1.4; // slow, deliberate expansion
+      w.alpha *= 0.975;
+      if(w.radius > w.maxRadius || w.alpha < 0.008){
         waveRipples.splice(i,1);
         continue;
       }
-      const grad = ctx.createRadialGradient(w.x, w.y, Math.max(0,w.radius-18), w.x, w.y, w.radius);
-      grad.addColorStop(0, `rgba(139,139,214,0)`);
-      grad.addColorStop(0.85, `rgba(201,83,106,${w.alpha})`);
-      grad.addColorStop(1, `rgba(201,83,106,0)`);
       ctx.beginPath();
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = 1.4;
+      ctx.strokeStyle = `rgba(201,83,106,${w.alpha})`;
+      ctx.lineWidth = 1.6;
       ctx.arc(w.x, w.y, w.radius, 0, Math.PI*2);
+      ctx.stroke();
+
+      // inner companion ring in the membrane hue for a layered wavefront
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(139,139,214,${w.alpha * 0.7})`;
+      ctx.lineWidth = 1;
+      ctx.arc(w.x, w.y, Math.max(0, w.radius - 14), 0, Math.PI*2);
       ctx.stroke();
     }
   }
