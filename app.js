@@ -906,7 +906,7 @@ window.addEventListener('resize', updateScrollProgress);
 updateScrollProgress();
 
 /* ============================================================
-   CUSTOM CURSOR - Comet with trailing particles
+   CUSTOM CURSOR - DNA double helix trail (zigzag) + fine dust particles
    ============================================================ */
 (function(){
   const dot = document.getElementById('cursor-dot');
@@ -932,19 +932,17 @@ updateScrollProgress();
 
   function rand(a,b){ return a + Math.random()*(b-a); }
 
-  // Comet trail: kept as a short, distance-capped history of positions
-  // (like the old DNA trail) so it draws as real trailing strand-lines,
-  // but capped by physical length so fast flicks don't stretch it out.
-  const TRAIL_MAX_LEN = 70; // max px of trail kept, regardless of speed
-  const trail = []; // [{x,y,arc}]
-  let trailArc = 0;
-  const STRANDS = 3; // number of parallel cosmic-string lines in the trail
+  // Store positions WITH cumulative arc-length so phase is distance-based, not index-based.
+  // That's what keeps the zigzag tight regardless of cursor speed.
+  const MAX_LEN = 160;   // max px of trail kept (physical length)
+  const PIXELS_PER_ZIGZAG = 26; // one full zigzag cycle every N pixels
+  const history = [];    // [{x, y, arc}]  arc = cumulative distance from tip
+  let totalArc = 0;
 
-  // Particle sparks flung off behind the comet head. These persist for
-  // several seconds and drift to a slow stop rather than vanishing quickly -
-  // the "particles that will last" part of the effect.
+  // Fine dust particles left behind the cursor - much smaller and more
+  // numerous than embers, drifting almost imperceptibly and lingering.
   const particles = []; // {x,y,vx,vy,size,life,maxLife,hue}
-  const MAX_PARTICLES = 220;
+  const MAX_PARTICLES = 260;
 
   window.addEventListener('mousemove', e => {
     const prevX = mouseX, prevY = mouseY;
@@ -952,36 +950,38 @@ updateScrollProgress();
     dot.style.left = mouseX + 'px';
     dot.style.top  = mouseY + 'px';
 
-    const dx = mouseX - prevX, dy = mouseY - prevY;
-    const dist = Math.sqrt(dx*dx + dy*dy);
+    const last = history[history.length - 1];
+    const dx = last ? mouseX - last.x : 0;
+    const dy = last ? mouseY - last.y : 0;
+    const step = Math.sqrt(dx*dx + dy*dy);
+    totalArc += step;
+    history.push({ x: mouseX, y: mouseY, arc: totalArc });
 
-    trailArc += dist;
-    trail.push({ x: mouseX, y: mouseY, arc: trailArc });
-    while(trail.length > 1 && (trailArc - trail[0].arc) > TRAIL_MAX_LEN){
-      trail.shift();
+    // Trim to MAX_LEN physical pixels from the tip
+    while(history.length > 1 && (totalArc - history[0].arc) > MAX_LEN){
+      history.shift();
     }
 
-    // Spawn a modest, capped number of particles per move event (not scaled
-    // by distance) so a fast flick sheds a small burst rather than a long
-    // continuous streak.
+    // Spawn fine dust along the segment just travelled, spaced by distance.
+    const dist = step;
     const speed = Math.min(dist, 80);
-    const steps = Math.min(3, Math.max(1, Math.floor(dist / 18)));
+    const steps = Math.min(4, Math.max(1, Math.floor(dist / 10)));
 
     for(let i = 0; i < steps; i++){
       const t = steps === 1 ? 1 : i / (steps - 1);
-      const px = prevX + dx * t;
-      const py = prevY + dy * t;
+      const px = (prevX + dx * t);
+      const py = (prevY + dy * t);
 
       const nx = dist > 0.01 ? -dy/dist : 0;
       const ny = dist > 0.01 ? dx/dist : 0;
-      const scatter = rand(-1, 1) * (2 + speed * 0.05);
+      const scatter = rand(-1, 1) * (3 + speed * 0.08);
 
       particles.push({
         x: px + nx * scatter,
         y: py + ny * scatter,
-        vx: rand(-0.15, 0.15),
-        vy: rand(-0.2, -0.02), // slow upward embers drift
-        size: rand(1, isPointer ? 3.2 : 2.4),
+        vx: rand(-0.06, 0.06),
+        vy: rand(-0.09, -0.01), // barely-there upward dust drift
+        size: rand(0.4, isPointer ? 1.3 : 1.0), // fine, dust-scale
         life: 0,
         maxLife: rand(240, 420), // several seconds at 60fps - these linger
         hue: Math.random() > 0.45 ? 'gold' : 'membrane'
@@ -991,56 +991,102 @@ updateScrollProgress();
   });
 
   function getColors(){
-    return {
-      gold: '201,83,106',
-      membrane: '139,139,214'
-    };
+    return { strand1:'#8b8bd6', strand2:'#c9536a', rung:'rgba(201,83,106,', gold:'201,83,106', membrane:'139,139,214' };
   }
 
+  let tick = 0;
   function draw(){
     ctx.clearRect(0, 0, W, H);
-    const col = getColors();
+    tick++;
 
-    // ---- Comet trail: several thin, straight-ish cosmic-string strands
-    // running through recent positions, each with a slight fixed offset
-    // so they read as parallel trailing lines rather than one thick tail. ----
-    const n = trail.length;
-    if(n > 1){
-      const tipArc = trail[n-1].arc;
-      const tailArc = trail[0].arc;
+    const col = getColors();
+    const n = history.length;
+
+    if(n >= 2){
+      const amplitude = isPointer ? 11 : isDown ? 4 : 8;
+      const tipArc = history[n-1].arc;
+      const tailArc = history[0].arc;
       const trailLen = tipArc - tailArc || 1;
 
-      for(let s = 0; s < STRANDS; s++){
-        // Each strand offset perpendicular to local travel direction by a
-        // small fixed amount, and given a distinct hue for a layered look.
-        const strandOffset = (s - (STRANDS-1)/2) * (isPointer ? 3.4 : 2.4);
-        const rgb = s % 2 === 0 ? col.gold : col.membrane;
+      // Zigzag waveform: a triangle wave in [-1, 1] instead of a sine,
+      // so the two strands snap between peaks/troughs in straight
+      // segments rather than curving smoothly.
+      function zigzag(phase){
+        const cyc = ((phase / (Math.PI*2)) % 1 + 1) % 1; // 0..1 within cycle
+        return cyc < 0.5 ? (cyc*4 - 1) : (3 - cyc*4);
+      }
 
-        for(let i = 1; i < n; i++){
-          const p0 = trail[i-1];
-          const p1 = trail[i];
-          const t0 = (p0.arc - tailArc) / trailLen;
-          const t1 = (p1.arc - tailArc) / trailLen;
-          const tMid = (t0 + t1) / 2;
+      for(let i = 1; i < n; i++){
+        const p0 = history[i-1];
+        const p1 = history[i];
 
-          const dx = p1.x - p0.x, dy = p1.y - p0.y;
-          const d = Math.sqrt(dx*dx + dy*dy) || 1;
-          const nx = -dy/d, ny = dx/d;
+        // t=0 at tail (oldest), t=1 at tip (newest)
+        const t0 = (p0.arc - tailArc) / trailLen;
+        const t1 = (p1.arc - tailArc) / trailLen;
+        const tMid = (t0 + t1) / 2;
 
-          const s0x = p0.x + nx * strandOffset * t0;
-          const s0y = p0.y + ny * strandOffset * t0;
-          const s1x = p1.x + nx * strandOffset * t1;
-          const s1y = p1.y + ny * strandOffset * t1;
+        // Arc-length-based phase: constant zigzags-per-pixel regardless of speed
+        const phase0 = (p0.arc / PIXELS_PER_ZIGZAG) * Math.PI * 2 + tick * 0.03;
+        const phase1 = (p1.arc / PIXELS_PER_ZIGZAG) * Math.PI * 2 + tick * 0.03;
 
+        // Perpendicular normals for each point
+        const dx = p1.x - p0.x, dy = p1.y - p0.y;
+        const d  = Math.sqrt(dx*dx + dy*dy) || 1;
+        const nx = -dy/d, ny = dx/d;
+
+        const amp0 = amplitude * t0;
+        const amp1 = amplitude * t1;
+
+        // Strand positions (zigzag instead of sine)
+        const z0 = zigzag(phase0), z1 = zigzag(phase1);
+        const s1x0 = p0.x + nx * z0 * amp0;
+        const s1y0 = p0.y + ny * z0 * amp0;
+        const s1x1 = p1.x + nx * z1 * amp1;
+        const s1y1 = p1.y + ny * z1 * amp1;
+
+        const z0b = zigzag(phase0 + Math.PI), z1b = zigzag(phase1 + Math.PI);
+        const s2x0 = p0.x + nx * z0b * amp0;
+        const s2y0 = p0.y + ny * z0b * amp0;
+        const s2x1 = p1.x + nx * z1b * amp1;
+        const s2y1 = p1.y + ny * z1b * amp1;
+
+        const alpha = tMid * 0.88;
+
+        // Strand 1
+        ctx.beginPath();
+        ctx.moveTo(s1x0, s1y0); ctx.lineTo(s1x1, s1y1);
+        ctx.strokeStyle = col.strand1;
+        ctx.globalAlpha = alpha;
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+
+        // Strand 2
+        ctx.beginPath();
+        ctx.moveTo(s2x0, s2y0); ctx.lineTo(s2x1, s2y1);
+        ctx.strokeStyle = col.strand2;
+        ctx.globalAlpha = alpha;
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+
+        // Rungs at fixed arc-length intervals (every 13px of trail)
+        const RUNG_INTERVAL = 13;
+        if(Math.floor(p1.arc / RUNG_INTERVAL) !== Math.floor(p0.arc / RUNG_INTERVAL) && tMid > 0.08){
           ctx.beginPath();
-          ctx.moveTo(s0x, s0y);
-          ctx.lineTo(s1x, s1y);
-          ctx.strokeStyle = `rgba(${rgb},${(tMid*0.75).toFixed(3)})`;
-          ctx.lineWidth = 1.3 + tMid * 1.4;
-          ctx.lineCap = 'round';
+          ctx.moveTo(s1x1, s1y1); ctx.lineTo(s2x1, s2y1);
+          ctx.strokeStyle = col.rung + (alpha * 0.9) + ')';
+          ctx.globalAlpha = 1;
+          ctx.lineWidth = 1.4;
           ctx.stroke();
+
+          // Node dots
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = col.strand1;
+          ctx.beginPath(); ctx.arc(s1x1, s1y1, 1.6 * tMid, 0, Math.PI*2); ctx.fill();
+          ctx.fillStyle = col.strand2;
+          ctx.beginPath(); ctx.arc(s2x1, s2y1, 1.6 * tMid, 0, Math.PI*2); ctx.fill();
         }
       }
+      ctx.globalAlpha = 1;
     }
 
     // Bright core glow at the head
@@ -1054,7 +1100,7 @@ updateScrollProgress();
     ctx.arc(mouseX, mouseY, glowR, 0, Math.PI*2);
     ctx.fill();
 
-    // ---- Trailing particles: drift slowly, shrink, and fade over several seconds ----
+    // ---- Fine dust particles: tiny, drift almost imperceptibly, linger for seconds ----
     for(let i = particles.length - 1; i >= 0; i--){
       const p = particles[i];
       p.life++;
@@ -1062,24 +1108,19 @@ updateScrollProgress();
 
       p.x += p.vx;
       p.y += p.vy;
-      p.vx *= 0.985;
-      p.vy *= 0.992;
+      p.vx *= 0.99;
+      p.vy *= 0.995;
 
       const lifeT = p.life / p.maxLife; // 0 -> 1
-      // Hold near-full brightness for most of the life, then ease out at the end,
-      // instead of fading linearly from the start - reads as "lasting" longer.
-      const alpha = (lifeT < 0.7 ? 1 : 1 - (lifeT - 0.7) / 0.3) * 0.7;
-      const size = p.size * (1 - lifeT * 0.5);
+      const alpha = (lifeT < 0.7 ? 1 : 1 - (lifeT - 0.7) / 0.3) * 0.55;
+      const size = p.size * (1 - lifeT * 0.4);
       const rgb = p.hue === 'gold' ? col.gold : col.membrane;
 
       ctx.beginPath();
       ctx.fillStyle = `rgba(${rgb},${alpha.toFixed(3)})`;
-      ctx.shadowColor = `rgba(${rgb},${(alpha*0.8).toFixed(3)})`;
-      ctx.shadowBlur = 6;
-      ctx.arc(p.x, p.y, Math.max(0.2, size), 0, Math.PI*2);
+      ctx.arc(p.x, p.y, Math.max(0.15, size), 0, Math.PI*2);
       ctx.fill();
     }
-    ctx.shadowBlur = 0;
 
     requestAnimationFrame(draw);
   }
