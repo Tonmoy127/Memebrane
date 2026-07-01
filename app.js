@@ -906,7 +906,7 @@ window.addEventListener('resize', updateScrollProgress);
 updateScrollProgress();
 
 /* ============================================================
-   CUSTOM CURSOR - DNA helix spiral trail (arc-length based)
+   CUSTOM CURSOR - Comet with trailing particles
    ============================================================ */
 (function(){
   const dot = document.getElementById('cursor-dot');
@@ -922,31 +922,6 @@ updateScrollProgress();
   let mouseX = W/2, mouseY = H/2;
   let isPointer = false, isDown = false;
 
-  // Store positions WITH cumulative arc-length so phase is distance-based, not index-based.
-  // That's what keeps the helix tight regardless of cursor speed.
-  const MAX_LEN = 160;   // max px of trail kept (physical length)
-  const PIXELS_PER_TURN = 28; // one full helix turn every N pixels
-  const history = [];    // [{x, y, arc}]  arc = cumulative distance from tip
-  let totalArc = 0;
-
-  window.addEventListener('mousemove', e => {
-    mouseX = e.clientX; mouseY = e.clientY;
-    dot.style.left = mouseX + 'px';
-    dot.style.top  = mouseY + 'px';
-
-    const last = history[history.length - 1];
-    const dx = last ? mouseX - last.x : 0;
-    const dy = last ? mouseY - last.y : 0;
-    const step = Math.sqrt(dx*dx + dy*dy);
-    totalArc += step;
-    history.push({ x: mouseX, y: mouseY, arc: totalArc });
-
-    // Trim to MAX_LEN physical pixels from the tip
-    while(history.length > 1 && (totalArc - history[0].arc) > MAX_LEN){
-      history.shift();
-    }
-  });
-
   const interactiveSelector = 'a,button,input,textarea,select,.person-card,.writing-entry,.photo-tile,.cal-cell,[onclick]';
   document.addEventListener('mouseover', e => { if(e.target.closest(interactiveSelector)){ isPointer=true;  document.body.classList.add('cursor-pointer'); }});
   document.addEventListener('mouseout',  e => { if(e.target.closest(interactiveSelector)){ isPointer=false; document.body.classList.remove('cursor-pointer'); }});
@@ -955,97 +930,125 @@ updateScrollProgress();
   document.addEventListener('mouseleave',()=>{ dot.style.opacity='0'; });
   document.addEventListener('mouseenter',()=>{ dot.style.opacity='1'; });
 
+  function rand(a,b){ return a + Math.random()*(b-a); }
+
+  // Comet head trail: short list of recent positions for the glowing streak.
+  const HEAD_TRAIL_LEN = 14;
+  const headTrail = []; // [{x,y}]
+
+  // Particle sparks flung off behind the comet head, each with its own
+  // independent drift, gravity-less decay, and fade - the "leaving
+  // particles behind" part of the effect.
+  const particles = []; // {x,y,vx,vy,size,life,maxLife,hue}
+  const MAX_PARTICLES = 140;
+
+  let lastSpawnX = null, lastSpawnY = null;
+
+  window.addEventListener('mousemove', e => {
+    const prevX = mouseX, prevY = mouseY;
+    mouseX = e.clientX; mouseY = e.clientY;
+    dot.style.left = mouseX + 'px';
+    dot.style.top  = mouseY + 'px';
+
+    headTrail.push({ x: mouseX, y: mouseY });
+    if(headTrail.length > HEAD_TRAIL_LEN) headTrail.shift();
+
+    // Spawn particles along the segment just travelled, spaced by distance
+    // (not by event count) so fast flicks still leave a continuous trail
+    // instead of sparse dots.
+    const dx = mouseX - prevX, dy = mouseY - prevY;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const speed = Math.min(dist, 80);
+    const steps = Math.max(1, Math.floor(dist / 6));
+
+    for(let i = 0; i < steps; i++){
+      const t = steps === 1 ? 1 : i / (steps - 1);
+      const px = prevX + dx * t;
+      const py = prevY + dy * t;
+
+      // Perpendicular jitter so particles scatter slightly off the exact path
+      const nx = dist > 0.01 ? -dy/dist : 0;
+      const ny = dist > 0.01 ? dx/dist : 0;
+      const scatter = rand(-1, 1) * (2 + speed * 0.06);
+
+      particles.push({
+        x: px + nx * scatter,
+        y: py + ny * scatter,
+        vx: (dx / (dist||1)) * rand(-0.3, 0.3) + rand(-0.25, 0.25),
+        vy: (dy / (dist||1)) * rand(-0.3, 0.3) + rand(-0.25, 0.25) - rand(0.05, 0.25), // slight upward drift, like embers
+        size: rand(1, isPointer ? 3.2 : 2.4),
+        life: 0,
+        maxLife: rand(28, 52),
+        hue: Math.random() > 0.45 ? 'gold' : 'membrane'
+      });
+    }
+    while(particles.length > MAX_PARTICLES) particles.shift();
+  });
+
   function getColors(){
-    return { strand1:'#8b8bd6', strand2:'#c9536a', rung:'rgba(201,83,106,' };
+    return {
+      gold: '201,83,106',
+      membrane: '139,139,214'
+    };
   }
 
-  let tick = 0;
   function draw(){
     ctx.clearRect(0, 0, W, H);
-    tick++;
-
-    const n = history.length;
-    if(n < 2){ requestAnimationFrame(draw); return; }
-
     const col = getColors();
-    const amplitude = isPointer ? 11 : isDown ? 4 : 8;
-    const tipArc = history[n-1].arc;
-    const tailArc = history[0].arc;
-    const trailLen = tipArc - tailArc || 1;
 
-    for(let i = 1; i < n; i++){
-      const p0 = history[i-1];
-      const p1 = history[i];
-
-      // t=0 at tail (oldest), t=1 at tip (newest)
-      const t0 = (p0.arc - tailArc) / trailLen;
-      const t1 = (p1.arc - tailArc) / trailLen;
-      const tMid = (t0 + t1) / 2;
-
-      // Arc-length-based phase: constant turns-per-pixel regardless of speed
-      const phase0 = (p0.arc / PIXELS_PER_TURN) * Math.PI * 2 + tick * 0.03;
-      const phase1 = (p1.arc / PIXELS_PER_TURN) * Math.PI * 2 + tick * 0.03;
-
-      // Perpendicular normals for each point
-      const dx = p1.x - p0.x, dy = p1.y - p0.y;
-      const d  = Math.sqrt(dx*dx + dy*dy) || 1;
-      const nx = -dy/d, ny = dx/d;
-
-      const amp0 = amplitude * t0;
-      const amp1 = amplitude * t1;
-
-      // Strand positions
-      const s1x0 = p0.x + nx * Math.sin(phase0) * amp0;
-      const s1y0 = p0.y + ny * Math.sin(phase0) * amp0;
-      const s1x1 = p1.x + nx * Math.sin(phase1) * amp1;
-      const s1y1 = p1.y + ny * Math.sin(phase1) * amp1;
-
-      const s2x0 = p0.x + nx * Math.sin(phase0 + Math.PI) * amp0;
-      const s2y0 = p0.y + ny * Math.sin(phase0 + Math.PI) * amp0;
-      const s2x1 = p1.x + nx * Math.sin(phase1 + Math.PI) * amp1;
-      const s2y1 = p1.y + ny * Math.sin(phase1 + Math.PI) * amp1;
-
-      const alpha = tMid * 0.88;
-
-      // Strand 1
-      ctx.beginPath();
-      ctx.moveTo(s1x0, s1y0); ctx.lineTo(s1x1, s1y1);
-      ctx.strokeStyle = col.strand1;
-      ctx.globalAlpha = alpha;
-      ctx.lineWidth = 1.6;
-      ctx.stroke();
-
-      // Strand 2
-      ctx.beginPath();
-      ctx.moveTo(s2x0, s2y0); ctx.lineTo(s2x1, s2y1);
-      ctx.strokeStyle = col.strand2;
-      ctx.globalAlpha = alpha;
-      ctx.lineWidth = 1.6;
-      ctx.stroke();
-
-      // Rungs at fixed arc-length intervals (every 14px of trail)
-      const RUNG_INTERVAL = 14;
-      if(Math.floor(p1.arc / RUNG_INTERVAL) !== Math.floor(p0.arc / RUNG_INTERVAL) && tMid > 0.08){
-        const midX = (s1x1 + s2x1) / 2;
-        const midY = (s1y1 + s2y1) / 2;
-
+    // ---- Comet head streak: tapered glowing line through recent positions ----
+    const n = headTrail.length;
+    if(n > 1){
+      for(let i = 1; i < n; i++){
+        const p0 = headTrail[i-1];
+        const p1 = headTrail[i];
+        const t = i / n; // 0 = tail, 1 = head
         ctx.beginPath();
-        ctx.moveTo(s1x1, s1y1); ctx.lineTo(s2x1, s2y1);
-        ctx.strokeStyle = col.rung + (alpha * 0.9) + ')';
-        ctx.globalAlpha = 1;
-        ctx.lineWidth = 1.4;
+        ctx.moveTo(p0.x, p0.y);
+        ctx.lineTo(p1.x, p1.y);
+        ctx.strokeStyle = `rgba(${col.gold},${(t*0.55).toFixed(3)})`;
+        ctx.lineWidth = isDown ? 2 + t*2 : 2.5 + t*3.5;
+        ctx.lineCap = 'round';
         ctx.stroke();
-
-        // Node dots
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = col.strand1;
-        ctx.beginPath(); ctx.arc(s1x1, s1y1, 1.6 * tMid, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = col.strand2;
-        ctx.beginPath(); ctx.arc(s2x1, s2y1, 1.6 * tMid, 0, Math.PI*2); ctx.fill();
       }
+      // Bright core glow at the very tip
+      const tip = headTrail[n-1];
+      const glowR = isPointer ? 16 : isDown ? 8 : 12;
+      const grad = ctx.createRadialGradient(tip.x, tip.y, 0, tip.x, tip.y, glowR);
+      grad.addColorStop(0, `rgba(${col.gold},0.55)`);
+      grad.addColorStop(0.5, `rgba(${col.membrane},0.22)`);
+      grad.addColorStop(1, `rgba(${col.membrane},0)`);
+      ctx.beginPath();
+      ctx.fillStyle = grad;
+      ctx.arc(tip.x, tip.y, glowR, 0, Math.PI*2);
+      ctx.fill();
     }
 
-    ctx.globalAlpha = 1;
+    // ---- Trailing particles: drift, shrink, and fade like embers ----
+    for(let i = particles.length - 1; i >= 0; i--){
+      const p = particles[i];
+      p.life++;
+      if(p.life >= p.maxLife){ particles.splice(i,1); continue; }
+
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vx *= 0.98;
+      p.vy *= 0.98;
+
+      const lifeT = p.life / p.maxLife; // 0 -> 1
+      const alpha = (1 - lifeT) * 0.75;
+      const size = p.size * (1 - lifeT * 0.7);
+      const rgb = p.hue === 'gold' ? col.gold : col.membrane;
+
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(${rgb},${alpha.toFixed(3)})`;
+      ctx.shadowColor = `rgba(${rgb},${(alpha*0.8).toFixed(3)})`;
+      ctx.shadowBlur = 6;
+      ctx.arc(p.x, p.y, Math.max(0.2, size), 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+
     requestAnimationFrame(draw);
   }
   draw();
@@ -1207,51 +1210,59 @@ document.getElementById('unlockInput').addEventListener('keydown', (e)=>{
 
   function rand(a,b){ return a + Math.random()*(b-a); }
 
-  /* ---- Cursor wave: ripples that spread outward from mouse movement ----
-     A lightweight ring-based wave system (not a full fluid sim, to stay
-     performant). Every meaningful mouse move spawns a soft expanding ring;
-     bubbles/particles near an active ring get gently pushed by it, and the
-     ring itself is drawn as a visible expanding stroke for the wave effect
-     on the background. */
-  const waveRipples = []; // {x,y,radius,alpha,maxRadius}
+  /* ---- Cursor wave: soft glowing bands that spread outward from cursor
+     movement, like a slow ripple through water rather than a thin ring.
+     Each wave is a filled radial band (soft leading edge, soft trailing
+     edge) so it reads as a visual "wave of light" instead of a stroked
+     circle. Spawn rate and expansion are both intentionally unhurried. */
+  const waveRipples = []; // {x,y,radius,alpha,maxRadius,band}
   let lastWaveX = null, lastWaveY = null, lastWaveT = 0;
 
   if(!reduceMotion && !window.matchMedia('(hover: none)').matches){
     window.addEventListener('mousemove', e=>{
       const now = performance.now();
-      if(now - lastWaveT < 40) return; // throttle so ripples stay sparse, not spammy
+      if(now - lastWaveT < 260) return; // much sparser spawn - a slow pulse, not a stream
       const x = e.clientX, y = e.clientY;
       if(lastWaveX !== null){
         const d = Math.hypot(x - lastWaveX, y - lastWaveY);
-        if(d < 3) return; // ignore tiny jitters
+        if(d < 18) return; // only spawn on real, deliberate movement
       }
       lastWaveX = x; lastWaveY = y; lastWaveT = now;
-      waveRipples.push({ x, y, radius: 4, maxRadius: rand(160,260), alpha: 0.45 });
-      if(waveRipples.length > 14) waveRipples.shift();
+      waveRipples.push({
+        x, y,
+        radius: 6,
+        maxRadius: rand(220, 340),
+        band: rand(50, 80),   // thickness of the soft wave band
+        alpha: 0.5
+      });
+      if(waveRipples.length > 6) waveRipples.shift();
     }, { passive:true });
   }
 
   function updateAndDrawWaves(){
     for(let i = waveRipples.length - 1; i >= 0; i--){
       const w = waveRipples[i];
-      w.radius += 1.4; // slow, deliberate expansion
-      w.alpha *= 0.975;
-      if(w.radius > w.maxRadius || w.alpha < 0.008){
+      w.radius += 0.55; // slow, deliberate expansion - a wave rolling out, not a ping
+      w.alpha *= 0.985;
+      if(w.radius > w.maxRadius || w.alpha < 0.006){
         waveRipples.splice(i,1);
         continue;
       }
-      ctx.beginPath();
-      ctx.strokeStyle = `rgba(201,83,106,${w.alpha})`;
-      ctx.lineWidth = 1.6;
-      ctx.arc(w.x, w.y, w.radius, 0, Math.PI*2);
-      ctx.stroke();
 
-      // inner companion ring in the membrane hue for a layered wavefront
+      // Filled soft band: transparent core -> peak brightness mid-band -> transparent edge.
+      // This is what makes it read as a rolling wave of light rather than an outline.
+      const inner = Math.max(0, w.radius - w.band);
+      const outer = w.radius;
+      const grad = ctx.createRadialGradient(w.x, w.y, inner, w.x, w.y, outer);
+      grad.addColorStop(0,   `rgba(201,83,106,0)`);
+      grad.addColorStop(0.45,`rgba(201,83,106,${w.alpha * 0.85})`);
+      grad.addColorStop(0.6, `rgba(139,139,214,${w.alpha * 0.5})`);
+      grad.addColorStop(1,   `rgba(139,139,214,0)`);
+
       ctx.beginPath();
-      ctx.strokeStyle = `rgba(139,139,214,${w.alpha * 0.7})`;
-      ctx.lineWidth = 1;
-      ctx.arc(w.x, w.y, Math.max(0, w.radius - 14), 0, Math.PI*2);
-      ctx.stroke();
+      ctx.fillStyle = grad;
+      ctx.arc(w.x, w.y, outer, 0, Math.PI*2);
+      ctx.fill();
     }
   }
 
@@ -1263,8 +1274,8 @@ document.getElementById('unlockInput').addEventListener('keydown', (e)=>{
       const ddx = px - w.x, ddy = py - w.y;
       const dist = Math.hypot(ddx, ddy);
       const edgeDist = Math.abs(dist - w.radius);
-      if(edgeDist < 40 && dist > 0.01){
-        const push = (1 - edgeDist/40) * w.alpha * 4;
+      if(edgeDist < w.band && dist > 0.01){
+        const push = (1 - edgeDist/w.band) * w.alpha * 3;
         dx += (ddx/dist) * push;
         dy += (ddy/dist) * push;
       }

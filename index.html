@@ -41,7 +41,7 @@ body{
   position:relative;
 }
 
-/* ===== CUSTOM CURSOR - DNA helix trail ===== */
+/* ===== CUSTOM CURSOR - Comet head + trailing particles ===== */
 #cursor-dot{
   position:fixed; top:0; left:0; z-index:9999; pointer-events:none;
   width:6px; height:6px; border-radius:50%;
@@ -49,11 +49,11 @@ body{
   transform:translate(-50%,-50%);
   opacity:1;
   transition:opacity 0.15s, transform 0.1s, background 0.15s;
-  box-shadow: 0 0 6px var(--gold-bright), 0 0 12px var(--gold-bright);
+  box-shadow: 0 0 8px var(--gold-bright), 0 0 18px var(--gold-bright), 0 0 30px rgba(201,83,106,0.4);
 }
 body.cursor-pointer #cursor-dot{
   background: var(--gold-bright);
-  box-shadow: 0 0 10px var(--gold-bright), 0 0 20px var(--gold-bright);
+  box-shadow: 0 0 12px var(--gold-bright), 0 0 26px var(--gold-bright), 0 0 40px rgba(201,83,106,0.5);
   transform: translate(-50%,-50%) scale(1.4);
 }
 body.cursor-down #cursor-dot{
