@@ -339,6 +339,102 @@ body.unlocked button.edit-only{ display:inline-block; }
 }
 @keyframes scrollcue{0%{opacity:1; top:6px;} 60%{opacity:0; top:22px;} 100%{opacity:0;}}
 
+/* ============================================================
+   MOTION ENHANCEMENT LAYER — additive only, no layout/color changes.
+   Adds: button shine sweep + ripple, card tilt (mouse-follow),
+   idle floating on cards/tiles, image parallax-zoom polish,
+   smoother section-linked reveals. Respects prefers-reduced-motion.
+   ============================================================ */
+@media (prefers-reduced-motion: no-preference){
+
+  /* ---- Buttons: shine sweep, ripple, inner glow, micro bounce ---- */
+  .btn{
+    position:relative;
+    overflow:hidden;
+    isolation:isolate;
+    transition:background 0.3s cubic-bezier(.16,1,.3,1), color 0.3s cubic-bezier(.16,1,.3,1),
+      box-shadow 0.4s cubic-bezier(.16,1,.3,1), transform 0.35s cubic-bezier(.34,1.56,.64,1);
+  }
+  .btn::before{
+    content:'';
+    position:absolute; inset:0; z-index:-1;
+    background:linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.22) 45%, transparent 70%);
+    transform:translateX(-140%);
+    transition:transform 0.85s cubic-bezier(.16,1,.3,1);
+    pointer-events:none;
+  }
+  .btn:hover::before{ transform:translateX(140%); }
+  .btn:hover{
+    box-shadow:0 0 0 1px rgba(var(--gold-rgb),0.25), 0 8px 28px -8px rgba(var(--gold-rgb),0.45);
+    transform:translateY(-2px);
+  }
+  .btn:active{ transform:translateY(0) scale(0.96); transition-duration:0.12s; }
+  .btn .ripple{
+    position:absolute; border-radius:50%; pointer-events:none;
+    background:rgba(255,255,255,0.5); transform:scale(0); opacity:0.6;
+    animation:btn-ripple 0.7s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  @keyframes btn-ripple{ to{ transform:scale(2.6); opacity:0; } }
+
+  /* ---- Person / uni cards: mouse-follow tilt + lift + glow ---- */
+  .person-card, .uni-card, .photo-tile, .writing-entry{
+    transform-style:preserve-3d;
+    will-change:transform;
+    transition:transform 0.5s cubic-bezier(.16,1,.3,1), box-shadow 0.5s cubic-bezier(.16,1,.3,1);
+  }
+  .person-card{
+    animation:card-breathe 7s ease-in-out infinite;
+    animation-play-state:paused;
+  }
+  .person-card:hover{ animation-play-state:running; }
+  @keyframes card-breathe{
+    0%,100%{ box-shadow:0 20px 60px -20px rgba(0,0,0,0.5); }
+    50%{ box-shadow:0 26px 70px -18px rgba(var(--gold-rgb),0.18); }
+  }
+
+  /* ---- Photo tiles: slow continuous scale + premium hover zoom ---- */
+  .photo-tile{ overflow:hidden; }
+  .photo-tile img{
+    transition:transform 1.1s cubic-bezier(.16,1,.3,1), filter 0.6s ease;
+    transform:scale(1.02);
+  }
+  .photo-tile:hover img{
+    transform:scale(1.12) rotate(0.3deg);
+  }
+
+  /* ---- Section headings: gentle float after entrance ---- */
+  .section-head.reveal.visible h2,
+  .section-head.reveal.visible .section-eyebrow{
+    animation:head-float 8s ease-in-out infinite;
+    animation-delay:1s;
+  }
+  .section-head.reveal.visible .section-eyebrow{ animation-duration:9s; animation-delay:1.3s; }
+  @keyframes head-float{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-5px); } }
+
+  /* ---- Social icons: lift on hover ---- */
+  .social-icon{ transition:transform 0.35s cubic-bezier(.34,1.56,.64,1), color 0.3s ease, filter 0.3s ease; }
+  .social-icon:hover{ transform:translateY(-3px) scale(1.12); filter:drop-shadow(0 4px 10px rgba(var(--gold-rgb),0.5)); }
+
+  /* ---- Inputs: glow on focus (slow, premium) ---- */
+  .field input, .field textarea, .field select{
+    transition:border-color 0.4s cubic-bezier(.16,1,.3,1), box-shadow 0.4s cubic-bezier(.16,1,.3,1);
+  }
+  .field input:focus, .field textarea:focus, .field select:focus{
+    box-shadow:0 0 0 4px rgba(var(--gold-rgb),0.12), 0 0 24px -4px rgba(var(--gold-rgb),0.35);
+  }
+
+  /* ---- Modals: slightly more cinematic entrance ---- */
+  .modal{ animation:modal-pop-cinematic 0.55s cubic-bezier(.16,1,.3,1); }
+  @keyframes modal-pop-cinematic{
+    from{ opacity:0; transform:scale(0.9) translateY(24px); filter:blur(6px); }
+    to{ opacity:1; transform:scale(1) translateY(0); filter:blur(0); }
+  }
+
+  /* ---- Background vignette: slow breathing so nothing feels static ---- */
+  .bg-vignette{ animation:vignette-breathe 14s ease-in-out infinite; }
+  @keyframes vignette-breathe{ 0%,100%{ opacity:1; } 50%{ opacity:0.85; } }
+}
+
 /* ===== SECTIONS ===== */
 section{ padding:var(--space-section) 6vw; position:relative; }
 .section-head{ text-align:center; margin-bottom:76px; }

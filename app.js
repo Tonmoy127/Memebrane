@@ -1862,4 +1862,84 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // Re-scan on page nav (goToPage swaps [hidden] pages in/out) and after dynamic renders.
   const revealRescan = new MutationObserver(()=>setupReveals());
   revealRescan.observe(document.body, { attributes:true, attributeFilter:['hidden'], subtree:true });
+
+  /* ---- Card tilt: mouse-follow 3D lean on person/uni/photo/writing cards ---- */
+  if(!reduceMotion && !noHover){
+    const tiltSelector = '.person-card, .uni-card, .photo-tile, .writing-entry';
+    const TILT_MAX = 6; // degrees, kept subtle so it stays premium not gimmicky
+
+    function attachTilt(el){
+      if(el.dataset.tiltBound) return;
+      el.dataset.tiltBound = 'true';
+      let raf = null;
+      let tRotX = 0, tRotY = 0, cRotX = 0, cRotY = 0;
+
+      function tick(){
+        cRotX += (tRotX - cRotX) * 0.15;
+        cRotY += (tRotY - cRotY) * 0.15;
+        el.style.transform = `perspective(900px) rotateX(${cRotX.toFixed(2)}deg) rotateY(${cRotY.toFixed(2)}deg)`;
+        if(Math.abs(tRotX-cRotX) > 0.05 || Math.abs(tRotY-cRotY) > 0.05){
+          raf = requestAnimationFrame(tick);
+        } else { raf = null; }
+      }
+      function start(){ if(!raf) raf = requestAnimationFrame(tick); }
+
+      el.addEventListener('mousemove', e=>{
+        const r = el.getBoundingClientRect();
+        const relX = (e.clientX - r.left) / r.width - 0.5;
+        const relY = (e.clientY - r.top) / r.height - 0.5;
+        tRotY = relX * TILT_MAX * 2;
+        tRotX = -relY * TILT_MAX;
+        start();
+      });
+      el.addEventListener('mouseleave', ()=>{
+        tRotX = 0; tRotY = 0;
+        start();
+      });
+    }
+    function scanTilts(){ document.querySelectorAll(tiltSelector).forEach(attachTilt); }
+    scanTilts();
+    const tiltObserver = new MutationObserver(()=>scanTilts());
+    tiltObserver.observe(document.body, { childList:true, subtree:true });
+  }
+
+  /* ---- Button ripple: soft click ripple, purely additive ---- */
+  document.addEventListener('click', e=>{
+    const btn = e.target.closest('.btn');
+    if(!btn) return;
+    const r = btn.getBoundingClientRect();
+    const size = Math.max(r.width, r.height) * 1.2;
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = (e.clientX - r.left - size/2) + 'px';
+    ripple.style.top  = (e.clientY - r.top  - size/2) + 'px';
+    btn.appendChild(ripple);
+    ripple.addEventListener('animationend', ()=>ripple.remove());
+  });
+
+  /* ---- Scroll-velocity parallax nudge on visible section headings ----
+     Adds a very subtle extra vertical drift proportional to scroll speed,
+     layered on top of the existing reveal transitions for a "weighted"
+     scroll feel, without touching layout or the scroll-progress bar logic. */
+  if(!reduceMotion){
+    let lastY = window.scrollY, vel = 0;
+    let headings = [];
+    function refreshHeadings(){
+      headings = Array.from(document.querySelectorAll('.page:not([hidden]) .section-head'));
+    }
+    refreshHeadings();
+    const headingsObserver = new MutationObserver(refreshHeadings);
+    headingsObserver.observe(document.body, { attributes:true, attributeFilter:['hidden'], subtree:true });
+
+    window.addEventListener('scroll', ()=>{
+      const y = window.scrollY;
+      vel = y - lastY;
+      lastY = y;
+      const drift = Math.max(-6, Math.min(6, vel * 0.15));
+      headings.forEach(h=>{
+        h.style.setProperty('--scroll-drift', drift.toFixed(2) + 'px');
+      });
+    }, { passive:true });
+  }
 })();
