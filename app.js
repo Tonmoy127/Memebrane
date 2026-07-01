@@ -1207,6 +1207,68 @@ document.getElementById('unlockInput').addEventListener('keydown', (e)=>{
 
   function rand(a,b){ return a + Math.random()*(b-a); }
 
+  /* ---- Cursor wave: ripples that spread outward from mouse movement ----
+     A lightweight ring-based wave system (not a full fluid sim, to stay
+     performant). Every meaningful mouse move spawns a soft expanding ring;
+     bubbles/particles near an active ring get gently pushed by it, and the
+     ring itself is drawn as a faint expanding stroke for the visible "wave"
+     on the background. */
+  const waveRipples = []; // {x,y,radius,alpha,maxRadius}
+  let lastWaveX = null, lastWaveY = null, lastWaveT = 0;
+
+  if(!reduceMotion && !window.matchMedia('(hover: none)').matches){
+    window.addEventListener('mousemove', e=>{
+      const now = performance.now();
+      if(now - lastWaveT < 60) return; // throttle so ripples stay sparse, not spammy
+      const x = e.clientX, y = e.clientY;
+      if(lastWaveX !== null){
+        const d = Math.hypot(x - lastWaveX, y - lastWaveY);
+        if(d < 6) return; // ignore tiny jitters
+      }
+      lastWaveX = x; lastWaveY = y; lastWaveT = now;
+      waveRipples.push({ x, y, radius: 0, maxRadius: rand(140,220), alpha: 0.16 });
+      if(waveRipples.length > 10) waveRipples.shift();
+    }, { passive:true });
+  }
+
+  function updateAndDrawWaves(){
+    for(let i = waveRipples.length - 1; i >= 0; i--){
+      const w = waveRipples[i];
+      w.radius += 0.55; // slow, deliberate expansion
+      w.alpha *= 0.99;
+      if(w.radius > w.maxRadius || w.alpha < 0.004){
+        waveRipples.splice(i,1);
+        continue;
+      }
+      const grad = ctx.createRadialGradient(w.x, w.y, Math.max(0,w.radius-18), w.x, w.y, w.radius);
+      grad.addColorStop(0, `rgba(139,139,214,0)`);
+      grad.addColorStop(0.85, `rgba(201,83,106,${w.alpha})`);
+      grad.addColorStop(1, `rgba(201,83,106,0)`);
+      ctx.beginPath();
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 1.4;
+      ctx.arc(w.x, w.y, w.radius, 0, Math.PI*2);
+      ctx.stroke();
+    }
+  }
+
+  // Displaces a point away from any active ripple whose edge is near it -
+  // gives bubbles/particles a gentle "pushed by the wave" feel.
+  function waveDisplacement(px, py){
+    let dx = 0, dy = 0;
+    for(const w of waveRipples){
+      const ddx = px - w.x, ddy = py - w.y;
+      const dist = Math.hypot(ddx, ddy);
+      const edgeDist = Math.abs(dist - w.radius);
+      if(edgeDist < 40 && dist > 0.01){
+        const push = (1 - edgeDist/40) * w.alpha * 4;
+        dx += (ddx/dist) * push;
+        dy += (ddy/dist) * push;
+      }
+    }
+    return [dx, dy];
+  }
+
   // Bubbles (membrane organelles) - dialed down for a subtler, more luxury ambience
   const bubbles = Array.from({length: 14}, ()=>({
     x: rand(0,1)*W, y: rand(0,1)*H,
@@ -1273,6 +1335,8 @@ document.getElementById('unlockInput').addEventListener('keydown', (e)=>{
     bubbles.forEach(b=>{
       b.y -= b.vy; b.wobble += b.wobbleSpeed;
       b.x += b.vx + Math.sin(b.wobble)*0.15;
+      const [wdx, wdy] = waveDisplacement(b.x, b.y);
+      b.x += wdx; b.y += wdy;
       if(b.y < -b.r){ b.y = H + b.r; b.x = rand(0,1)*W; }
       if(b.x < -b.r) b.x = W + b.r;
       if(b.x > W + b.r) b.x = -b.r;
@@ -1301,12 +1365,17 @@ document.getElementById('unlockInput').addEventListener('keydown', (e)=>{
     // particles
     particles.forEach(p=>{
       p.y -= p.vy; p.x += p.vx;
+      const [wdx, wdy] = waveDisplacement(p.x, p.y);
+      p.x += wdx; p.y += wdy;
       if(p.y < -5){ p.y = H+5; p.x = rand(0,1)*W; }
       ctx.beginPath();
       ctx.fillStyle = `rgba(244,244,242,${p.alpha})`;
       ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
       ctx.fill();
     });
+
+    // cursor wave ripples (drawn above particles/bubbles, below brains)
+    updateAndDrawWaves();
 
     // brains
     brains.forEach(b=>{
@@ -1787,8 +1856,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
         ty = ((e.clientY - cy) / r.height) * 18;
       }, { passive:true });
       (function loop(){
-        px += (tx - px) * 0.08;
-        py += (ty - py) * 0.08;
+        px += (tx - px) * 0.045;
+        py += (ty - py) * 0.045;
         stage.style.setProperty('--px', px.toFixed(2) + 'px');
         stage.style.setProperty('--py', py.toFixed(2) + 'px');
         requestAnimationFrame(loop);
@@ -1808,8 +1877,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
       let tx = 0, ty = 0, cx = 0, cy = 0, raf = null;
 
       function tick(){
-        cx += (tx - cx) * 0.2;
-        cy += (ty - cy) * 0.2;
+        cx += (tx - cx) * 0.1;
+        cy += (ty - cy) * 0.1;
         el.style.transform = `translate(${cx.toFixed(2)}px, ${cy.toFixed(2)}px)`;
         if(Math.abs(tx-cx) > 0.1 || Math.abs(ty-cy) > 0.1){
           raf = requestAnimationFrame(tick);
@@ -1848,12 +1917,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
   function setupReveals(){
     const targets = document.querySelectorAll('.reveal, .reveal-scale, .reveal-blur, .reveal-mask, .reveal-stagger');
     if(!targets.length) return;
+    // Bidirectional: elements reveal on the way down AND un-reveal (reverse
+    // their entrance animation) on the way back up past them, so scrolling
+    // up feels like watching the scene retreat rather than a one-shot intro.
     const obs = new IntersectionObserver((entries)=>{
       entries.forEach(e=>{
-        if(e.isIntersecting){
-          e.target.classList.add('visible');
-          obs.unobserve(e.target);
-        }
+        e.target.classList.toggle('visible', e.isIntersecting);
       });
     }, { threshold:0.15, rootMargin:'0px 0px -40px 0px' });
     targets.forEach(el=>obs.observe(el));
@@ -1875,8 +1944,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
       let tRotX = 0, tRotY = 0, cRotX = 0, cRotY = 0;
 
       function tick(){
-        cRotX += (tRotX - cRotX) * 0.15;
-        cRotY += (tRotY - cRotY) * 0.15;
+        cRotX += (tRotX - cRotX) * 0.08;
+        cRotY += (tRotY - cRotY) * 0.08;
         el.style.transform = `perspective(900px) rotateX(${cRotX.toFixed(2)}deg) rotateY(${cRotY.toFixed(2)}deg)`;
         if(Math.abs(tRotX-cRotX) > 0.05 || Math.abs(tRotY-cRotY) > 0.05){
           raf = requestAnimationFrame(tick);
