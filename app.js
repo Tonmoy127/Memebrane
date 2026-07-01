@@ -932,17 +932,18 @@ updateScrollProgress();
 
   function rand(a,b){ return a + Math.random()*(b-a); }
 
-  // Comet head trail: short list of recent positions for the glowing streak.
-  const HEAD_TRAIL_LEN = 14;
-  const headTrail = []; // [{x,y}]
+  // Comet head: kept as a tight, distance-capped glow (not raw event
+  // history) so fast mouse flicks don't stretch it into a long line -
+  // the head trail is trimmed by physical pixel length, not event count.
+  const HEAD_MAX_LEN = 34; // max px of head streak, regardless of speed
+  const headTrail = []; // [{x,y,arc}]  arc = cumulative distance from tip
+  let headArc = 0;
 
-  // Particle sparks flung off behind the comet head, each with its own
-  // independent drift, gravity-less decay, and fade - the "leaving
-  // particles behind" part of the effect.
+  // Particle sparks flung off behind the comet head. These persist for
+  // several seconds and drift to a slow stop rather than vanishing quickly -
+  // the "particles that will last" part of the effect.
   const particles = []; // {x,y,vx,vy,size,life,maxLife,hue}
-  const MAX_PARTICLES = 140;
-
-  let lastSpawnX = null, lastSpawnY = null;
+  const MAX_PARTICLES = 220;
 
   window.addEventListener('mousemove', e => {
     const prevX = mouseX, prevY = mouseY;
@@ -950,35 +951,38 @@ updateScrollProgress();
     dot.style.left = mouseX + 'px';
     dot.style.top  = mouseY + 'px';
 
-    headTrail.push({ x: mouseX, y: mouseY });
-    if(headTrail.length > HEAD_TRAIL_LEN) headTrail.shift();
-
-    // Spawn particles along the segment just travelled, spaced by distance
-    // (not by event count) so fast flicks still leave a continuous trail
-    // instead of sparse dots.
     const dx = mouseX - prevX, dy = mouseY - prevY;
     const dist = Math.sqrt(dx*dx + dy*dy);
+
+    headArc += dist;
+    headTrail.push({ x: mouseX, y: mouseY, arc: headArc });
+    while(headTrail.length > 1 && (headArc - headTrail[0].arc) > HEAD_MAX_LEN){
+      headTrail.shift();
+    }
+
+    // Spawn a modest, capped number of particles per move event (not scaled
+    // by distance) so a fast flick sheds a small burst rather than a long
+    // continuous streak.
     const speed = Math.min(dist, 80);
-    const steps = Math.max(1, Math.floor(dist / 6));
+    const steps = Math.min(3, Math.max(1, Math.floor(dist / 18)));
 
     for(let i = 0; i < steps; i++){
       const t = steps === 1 ? 1 : i / (steps - 1);
       const px = prevX + dx * t;
       const py = prevY + dy * t;
 
-      // Perpendicular jitter so particles scatter slightly off the exact path
       const nx = dist > 0.01 ? -dy/dist : 0;
       const ny = dist > 0.01 ? dx/dist : 0;
-      const scatter = rand(-1, 1) * (2 + speed * 0.06);
+      const scatter = rand(-1, 1) * (2 + speed * 0.05);
 
       particles.push({
         x: px + nx * scatter,
         y: py + ny * scatter,
-        vx: (dx / (dist||1)) * rand(-0.3, 0.3) + rand(-0.25, 0.25),
-        vy: (dy / (dist||1)) * rand(-0.3, 0.3) + rand(-0.25, 0.25) - rand(0.05, 0.25), // slight upward drift, like embers
+        vx: rand(-0.15, 0.15),
+        vy: rand(-0.2, -0.02), // slow upward embers drift
         size: rand(1, isPointer ? 3.2 : 2.4),
         life: 0,
-        maxLife: rand(28, 52),
+        maxLife: rand(240, 420), // several seconds at 60fps - these linger
         hue: Math.random() > 0.45 ? 'gold' : 'membrane'
       });
     }
@@ -996,18 +1000,21 @@ updateScrollProgress();
     ctx.clearRect(0, 0, W, H);
     const col = getColors();
 
-    // ---- Comet head streak: tapered glowing line through recent positions ----
+    // ---- Comet head: tapered glowing streak, length-capped by distance ----
     const n = headTrail.length;
     if(n > 1){
+      const tipArc = headTrail[n-1].arc;
+      const tailArc = headTrail[0].arc;
+      const trailLen = tipArc - tailArc || 1;
       for(let i = 1; i < n; i++){
         const p0 = headTrail[i-1];
         const p1 = headTrail[i];
-        const t = i / n; // 0 = tail, 1 = head
+        const t = (p1.arc - tailArc) / trailLen; // 0 = tail, 1 = head
         ctx.beginPath();
         ctx.moveTo(p0.x, p0.y);
         ctx.lineTo(p1.x, p1.y);
-        ctx.strokeStyle = `rgba(${col.gold},${(t*0.55).toFixed(3)})`;
-        ctx.lineWidth = isDown ? 2 + t*2 : 2.5 + t*3.5;
+        ctx.strokeStyle = `rgba(${col.gold},${(t*0.5).toFixed(3)})`;
+        ctx.lineWidth = isDown ? 2 + t*2 : 2.5 + t*3;
         ctx.lineCap = 'round';
         ctx.stroke();
       }
@@ -1024,7 +1031,7 @@ updateScrollProgress();
       ctx.fill();
     }
 
-    // ---- Trailing particles: drift, shrink, and fade like embers ----
+    // ---- Trailing particles: drift slowly, shrink, and fade over several seconds ----
     for(let i = particles.length - 1; i >= 0; i--){
       const p = particles[i];
       p.life++;
@@ -1032,12 +1039,14 @@ updateScrollProgress();
 
       p.x += p.vx;
       p.y += p.vy;
-      p.vx *= 0.98;
-      p.vy *= 0.98;
+      p.vx *= 0.985;
+      p.vy *= 0.992;
 
       const lifeT = p.life / p.maxLife; // 0 -> 1
-      const alpha = (1 - lifeT) * 0.75;
-      const size = p.size * (1 - lifeT * 0.7);
+      // Hold near-full brightness for most of the life, then ease out at the end,
+      // instead of fading linearly from the start - reads as "lasting" longer.
+      const alpha = (lifeT < 0.7 ? 1 : 1 - (lifeT - 0.7) / 0.3) * 0.7;
+      const size = p.size * (1 - lifeT * 0.5);
       const rgb = p.hue === 'gold' ? col.gold : col.membrane;
 
       ctx.beginPath();
