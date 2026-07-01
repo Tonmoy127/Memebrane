@@ -21,6 +21,7 @@
   --glass-border-bright: rgba(232,200,115,0.5);
   --shadow-deep: rgba(0,0,0,0.55);
   --gold-rgb: 232,200,115;
+  --space-section: clamp(70px, 10vw, 120px);
 }
 /* ===== RED THEME OVERRIDE ===== */
 body.theme-red{
@@ -383,33 +384,44 @@ nav{
 header.hero{
   min-height:100vh;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
-  text-align:center; padding:100px 20px 60px;
+  text-align:center; padding:120px 20px 60px;
   position:relative;
 }
+.hero-kicker{
+  display:inline-flex; align-items:center; gap:10px;
+  font-family:'Outfit'; font-size:0.72rem; letter-spacing:4px; text-transform:uppercase;
+  color:var(--membrane); margin-bottom:26px; opacity:0.85;
+}
+.hero-kicker::before,
+.hero-kicker::after{
+  content:''; width:28px; height:1px; background:currentColor; opacity:0.5;
+}
 .hero-logo{
-  width:200px; height:200px; border-radius:50%;
+  width:172px; height:172px; border-radius:50%;
   border:3px solid var(--gold-bright);
   box-shadow:0 0 60px rgba(232,200,115,0.45), 0 0 120px rgba(111,174,126,0.25);
-  margin-bottom:28px;
+  margin-bottom:32px;
   animation: float-logo 6s ease-in-out infinite;
 }
 @keyframes float-logo{ 0%,100%{transform:translateY(0) rotate(0deg);} 50%{transform:translateY(-14px) rotate(2deg);} }
 .hero h1{
-  font-family:'Fredoka'; font-weight:700; font-size:clamp(2.6rem,7vw,5.2rem);
-  color:var(--gold-bright); letter-spacing:1px;
-  text-shadow:0 0 40px rgba(232,200,115,0.4);
-  line-height:1.05;
+  font-family:'Fredoka'; font-weight:700; font-size:clamp(2.8rem,8vw,6rem);
+  color:var(--gold-bright); letter-spacing:-1px;
+  text-shadow:0 0 50px rgba(232,200,115,0.35);
+  line-height:0.98;
 }
 .hero .bn{
-  font-size:clamp(1.1rem,2.6vw,1.6rem); color:var(--membrane); margin-top:14px; font-weight:500;
+  font-size:clamp(1.05rem,2.4vw,1.45rem); color:var(--membrane); margin-top:16px; font-weight:500;
+  letter-spacing:0.3px;
 }
 .hero p.tag{
-  margin-top:22px; max-width:560px; color:rgba(241,234,217,0.75); font-size:1.05rem; line-height:1.6;
+  margin-top:26px; max-width:540px; color:rgba(241,234,217,0.7); font-size:1.05rem; line-height:1.7;
+  font-weight:300;
 }
 .hero .pill{
-  margin-top:30px; display:inline-flex; align-items:center; gap:8px;
-  padding:10px 22px; border-radius:40px; font-family:'Outfit'; font-size:0.85rem;
-  color:var(--gold-bright);
+  margin-top:34px; display:inline-flex; align-items:center; gap:10px;
+  padding:11px 24px; border-radius:40px; font-family:'Outfit'; font-size:0.82rem;
+  color:var(--gold-bright); letter-spacing:0.3px;
 }
 .nav-links a.nav-link.active{
   color:var(--gold-bright);
@@ -456,16 +468,25 @@ body.unlocked button.edit-only{ display:inline-block; }
 @keyframes scrollcue{0%{opacity:1; top:6px;} 60%{opacity:0; top:22px;} 100%{opacity:0;}}
 
 /* ===== SECTIONS ===== */
-section{ padding:90px 6vw; position:relative; }
-.section-head{ text-align:center; margin-bottom:54px; }
+section{ padding:var(--space-section) 6vw; position:relative; }
+.section-head{ text-align:center; margin-bottom:60px; }
 .section-eyebrow{
-  font-family:'Outfit'; color:var(--membrane); font-size:0.8rem; letter-spacing:3px;
-  text-transform:uppercase; margin-bottom:10px; display:block;
+  font-family:'Outfit'; color:var(--membrane); font-size:0.76rem; letter-spacing:3.5px;
+  text-transform:uppercase; margin-bottom:12px; display:block; font-weight:500;
 }
 .section-head h2{
-  font-family:'Fredoka'; font-weight:600; font-size:clamp(1.8rem,4vw,2.8rem); color:var(--gold-bright);
+  font-family:'Fredoka'; font-weight:600; font-size:clamp(1.9rem,4.2vw,3rem); color:var(--gold-bright);
+  letter-spacing:-0.5px;
 }
-.section-head p{ color:rgba(241,234,217,0.65); max-width:620px; margin:14px auto 0; font-size:0.98rem; }
+.section-head p{ color:rgba(241,234,217,0.6); max-width:600px; margin:16px auto 0; font-size:0.98rem; line-height:1.65; font-weight:300; }
+.about-bn{ color:var(--membrane); font-size:1.05rem; margin-top:8px; }
+.about-panel{
+  max-width:720px; margin:0 auto; padding:40px 36px; text-align:center;
+}
+.about-text{
+  font-size:1.04rem; line-height:1.85; color:rgba(241,234,217,0.85); font-weight:300;
+}
+.about-edit-btn{ margin-top:20px; }
 
 /* ===== PEOPLE GRID (admins/mods) ===== */
 .people-grid{
@@ -478,7 +499,7 @@ section{ padding:90px 6vw; position:relative; }
   .people-grid{ grid-template-columns:1fr; max-width:340px; }
 }
 .person-card{
-  padding:28px 22px; text-align:center; transition:transform 0.35s, box-shadow 0.35s; overflow:hidden;
+  padding:28px 22px; text-align:center; transition:transform 0.4s cubic-bezier(.16,1,.3,1), box-shadow 0.4s cubic-bezier(.16,1,.3,1); overflow:hidden;
 }
 .person-card:hover{ transform:translateY(-8px); box-shadow:0 16px 40px rgba(0,0,0,0.6), 0 0 30px rgba(232,200,115,0.15); }
 .person-photo{
@@ -499,7 +520,7 @@ section{ padding:90px 6vw; position:relative; }
   font-family:'Outfit'; font-weight:600; font-size:0.85rem; padding:10px 20px; border-radius:30px;
   border:1px solid var(--glass-border-bright); cursor:pointer;
   background:rgba(212,168,67,0.12); color:var(--gold-bright);
-  transition:all 0.25s; backdrop-filter:blur(10px);
+  transition:all 0.3s cubic-bezier(.16,1,.3,1); backdrop-filter:blur(10px);
 }
 .btn:hover{ background:rgba(212,168,67,0.25); box-shadow:0 0 18px rgba(212,168,67,0.3); transform:translateY(-2px); }
 .btn.secondary{ background:rgba(111,174,126,0.12); color:var(--membrane); border-color:rgba(111,174,126,0.4); }
@@ -963,6 +984,7 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
 
 <div class="page" id="page-home">
 <header class="hero">
+  <span class="hero-kicker">Est. for the chronically online</span>
   <img src="logo.jpg" alt="Memebrane" class="hero-logo">
   <h1>MEMEBRANE</h1>
   <p class="tag">Welcome, Memebraniacs, to the home of educational mayhem, community art, and the occasional brainwave.</p>
@@ -988,14 +1010,14 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
     <div class="section-head fade-up">
       <span class="section-eyebrow">About the page</span>
       <h2>MEMEBRANE</h2>
-      <p class="bn" style="color:var(--membrane); font-size:1.05rem; margin-top:6px;">শিক্ষা বিষয়ক রম্যচিত্র (শিবির)</p>
+      <p class="bn about-bn">শিক্ষা বিষয়ক রম্যচিত্র (শিবির)</p>
     </div>
-    <div class="glass fade-up" style="max-width:760px; margin:0 auto; padding:36px 32px; text-align:center;">
+    <div class="glass about-panel fade-up">
       <div class="glass-shine"></div>
-      <p style="font-size:1.02rem; line-height:1.8; color:rgba(241,234,217,0.85);" id="aboutText">
+      <p class="about-text" id="aboutText">
         Memebrane is a community built on one simple membrane: the thin, glowing line between studying and losing your mind over it. We turn classroom chaos, exam dread, and everyday academic life into memes, art, and writing - made by Memebraniacs, for Memebraniacs.
       </p>
-      <button class="btn small edit-only" style="margin-top:18px;" onclick="editAbout()">✏️ Edit text</button>
+      <button class="btn small edit-only about-edit-btn" onclick="editAbout()">✏️ Edit text</button>
     </div>
   </section>
 
