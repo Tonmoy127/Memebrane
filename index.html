@@ -951,6 +951,79 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
 .fade-up{ opacity:0; transform:translateY(30px); transition:opacity 0.8s ease, transform 0.8s ease; }
 .fade-up.visible{ opacity:1; transform:translateY(0); }
 
+/* ===== LUSION-STYLE MOTION LAYER ===== */
+
+/* Reveal variants - richer than plain fade-up, used on section heads/panels */
+.reveal{
+  opacity:0;
+  transform:translateY(48px);
+  transition:opacity 1.1s cubic-bezier(.16,1,.3,1), transform 1.1s cubic-bezier(.16,1,.3,1);
+  will-change:transform, opacity;
+}
+.reveal.visible{ opacity:1; transform:translateY(0); }
+.reveal-scale{ opacity:0; transform:scale(0.92) translateY(20px); transition:opacity 1s cubic-bezier(.16,1,.3,1), transform 1s cubic-bezier(.16,1,.3,1); }
+.reveal-scale.visible{ opacity:1; transform:scale(1) translateY(0); }
+.reveal-mask{ overflow:hidden; }
+.reveal-mask > *{
+  display:block; transform:translateY(105%);
+  transition:transform 0.95s cubic-bezier(.16,1,.3,1);
+}
+.reveal-mask.visible > *{ transform:translateY(0); }
+
+/* stagger children of a .reveal-stagger container */
+.reveal-stagger > *{
+  opacity:0; transform:translateY(28px);
+  transition:opacity 0.75s cubic-bezier(.16,1,.3,1), transform 0.75s cubic-bezier(.16,1,.3,1);
+}
+.reveal-stagger.visible > *{ opacity:1; transform:translateY(0); }
+.reveal-stagger.visible > *:nth-child(1){ transition-delay:0.02s; }
+.reveal-stagger.visible > *:nth-child(2){ transition-delay:0.08s; }
+.reveal-stagger.visible > *:nth-child(3){ transition-delay:0.14s; }
+.reveal-stagger.visible > *:nth-child(4){ transition-delay:0.2s; }
+.reveal-stagger.visible > *:nth-child(5){ transition-delay:0.26s; }
+.reveal-stagger.visible > *:nth-child(6){ transition-delay:0.32s; }
+.reveal-stagger.visible > *:nth-child(n+7){ transition-delay:0.36s; }
+
+@media (prefers-reduced-motion: reduce){
+  .reveal, .reveal-scale, .reveal-mask > *, .reveal-stagger > *{ transition:none !important; opacity:1 !important; transform:none !important; }
+}
+
+/* Kinetic hero title - each letter is its own span, entrance + hover-reactive */
+.hero h1.kinetic{ display:flex; flex-wrap:wrap; justify-content:center; }
+.hero h1.kinetic .kchar{
+  display:inline-block;
+  opacity:0; transform:translateY(60px) rotate(6deg);
+  transition:transform 0.15s ease-out;
+  animation: kchar-in 0.9s cubic-bezier(.16,1,.3,1) forwards;
+}
+@keyframes kchar-in{ to{ opacity:1; transform:translateY(0) rotate(0deg); } }
+
+/* Hero parallax stage - layers translate on mousemove via JS-set CSS vars */
+.hero{
+  --px:0px; --py:0px;
+}
+.hero-logo{
+  transform: translate(calc(var(--px) * 1.4), calc(var(--py) * 1.4));
+  transition: transform 0.25s ease-out;
+}
+.hero-kicker, .hero p.tag, .hero .pill{
+  transform: translate(calc(var(--px) * 0.4), calc(var(--py) * 0.4));
+  transition: transform 0.3s ease-out;
+}
+.hero h1.kinetic{
+  transform: translate(calc(var(--px) * 0.8), calc(var(--py) * 0.8));
+  transition: transform 0.2s ease-out;
+}
+
+/* Magnetic cursor ring - grows + softens over magnetic targets */
+#cursor-dot.magnet-active{
+  transform: translate(-50%,-50%) scale(2.2);
+  background: transparent;
+  border:1.5px solid var(--gold-bright);
+  box-shadow:0 0 16px rgba(var(--gold-rgb),0.5);
+  transition: transform 0.2s cubic-bezier(.2,.8,.2,1), background 0.2s, border-color 0.2s;
+}
+
 @media (prefers-reduced-motion: reduce){
   *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
 }
@@ -1012,10 +1085,10 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
 <div class="nav-progress-track" aria-hidden="true"><div class="nav-progress-bar" id="navProgressBar"></div></div>
 
 <div class="page" id="page-home">
-<header class="hero">
+<header class="hero" id="heroStage">
   <span class="hero-kicker">Est. for the chronically online</span>
   <img src="logo.jpg" alt="Memebrane" class="hero-logo">
-  <h1>MEMEBRANE</h1>
+  <h1 class="kinetic" id="heroTitle" data-text="MEMEBRANE">MEMEBRANE</h1>
   <p class="tag">Welcome, Memebraniacs, to the home of educational mayhem, community art, and the occasional brainwave.</p>
   <div class="pill glass">🧠 Built for the Memebraniacs</div>
   <div class="scroll-cue"></div>
@@ -1024,7 +1097,7 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
 <main>
 
   <section id="admins">
-    <div class="section-head fade-up">
+    <div class="section-head reveal">
       <span class="section-eyebrow">The brains behind it</span>
       <h2>Admins</h2>
       <p>The core team steering Memebrane's chaos with purpose.</p>
@@ -1032,18 +1105,18 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
     <div class="admin-bar edit-only">
       <button class="btn" onclick="openPersonModal('admins')">+ Add admin</button>
     </div>
-    <div class="people-grid fade-up" id="adminsGrid"></div>
+    <div class="people-grid reveal-stagger" id="adminsGrid"></div>
   </section>
 
   <div class="section-divider"><span></span></div>
 
   <section id="about">
-    <div class="section-head fade-up">
+    <div class="section-head reveal">
       <span class="section-eyebrow">About the page</span>
       <h2>MEMEBRANE</h2>
       <p class="bn about-bn">শিক্ষা বিষয়ক রম্যচিত্র (শিবির)</p>
     </div>
-    <div class="about-panel fade-up">
+    <div class="about-panel reveal-scale">
       <p class="about-text" id="aboutText">
         Memebrane is a community built on one simple membrane: the thin, glowing line between studying and losing your mind over it. We turn classroom chaos, exam dread, and everyday academic life into memes, art, and writing - made by Memebraniacs, for Memebraniacs.
       </p>
@@ -1054,7 +1127,7 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
   <div class="section-divider"><span></span></div>
 
   <section id="mods">
-    <div class="section-head fade-up">
+    <div class="section-head reveal">
       <span class="section-eyebrow">Keeping the peace</span>
       <h2>Moderators</h2>
       <p>The watchful membrane guarding the community day and night.</p>
@@ -1062,7 +1135,7 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
     <div class="admin-bar edit-only">
       <button class="btn" onclick="openPersonModal('mods')">+ Add moderator</button>
     </div>
-    <div class="people-grid fade-up" id="modsGrid"></div>
+    <div class="people-grid reveal-stagger" id="modsGrid"></div>
   </section>
 
 </main>
@@ -1071,12 +1144,12 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
 <div class="page" id="page-events" hidden>
 <main>
   <section id="calendar">
-    <div class="section-head fade-up">
+    <div class="section-head reveal">
       <span class="section-eyebrow">Mark your calendars</span>
       <h2>Upcoming Events</h2>
       <p>Everything happening in the Memebrane universe - add it to your own calendar with one click.</p>
     </div>
-    <div class="calendar-wrap fade-up flat-panel" style="padding:26px;">
+    <div class="calendar-wrap reveal flat-panel" style="padding:26px;">
       <div class="calendar-nav">
         <button onclick="changeMonth(-1)">‹</button>
         <h3 id="calMonthLabel"></h3>
@@ -1096,7 +1169,7 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
 <div class="page" id="page-writings" hidden>
 <main>
   <section id="writings">
-    <div class="section-head fade-up">
+    <div class="section-head reveal">
       <span class="section-eyebrow">Words from Memebraniacs</span>
       <h2>Community Writings</h2>
       <p>Stories, poems, rants, and reflections from the community.</p>
@@ -1112,7 +1185,7 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
 <div class="page" id="page-photography" hidden>
 <main>
   <section id="photography">
-    <div class="section-head fade-up">
+    <div class="section-head reveal">
       <span class="section-eyebrow">Frames from Memebraniacs</span>
       <h2>Community Photography</h2>
       <p>Snapshots of life, campus, and everything in between.</p>
@@ -1128,7 +1201,7 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
 <div class="page" id="page-routine" hidden>
 <main>
   <section id="routine">
-    <div class="section-head fade-up">
+    <div class="section-head reveal">
       <span class="section-eyebrow">Plan your grind</span>
       <h2>Study Routine Planner</h2>
       <p>Build your weekly routine and download it as a PDF to print or keep on your phone.</p>
@@ -1157,13 +1230,13 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
 <div class="page" id="page-universities" hidden>
 <main>
   <section id="universities">
-    <div class="section-head fade-up">
+    <div class="section-head reveal">
       <span class="section-eyebrow">Plan your future</span>
       <h2>Public Universities of Bangladesh</h2>
       <p>Departments, institutes, and career paths at home and abroad - search or filter to find what you need.</p>
     </div>
 
-    <div class="uni-controls fade-up">
+    <div class="uni-controls reveal">
       <div class="uni-search">
         <input type="text" id="uniSearchInput" placeholder="Search university, department, or career field..." oninput="renderUniversities()">
       </div>

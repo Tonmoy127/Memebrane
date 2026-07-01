@@ -1789,3 +1789,123 @@ document.addEventListener('DOMContentLoaded', ()=>{
     renderUniversities();
   }
 });
+
+/* ============================================================
+   LUSION-STYLE MOTION LAYER
+   - Kinetic hero title (letters split into spans, staggered entrance)
+   - Hero mouse parallax (title/logo/tagline drift on cursor move)
+   - Magnetic pull on buttons/links/cards (element leans toward cursor)
+   - Upgraded scroll reveals (.reveal / .reveal-scale / .reveal-mask / .reveal-stagger)
+   Runs alongside the existing DNA cursor trail and ambient canvas -
+   none of the calendar/routine/university/admin logic above is touched.
+   ============================================================ */
+(function(){
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const noHover = window.matchMedia('(hover: none)').matches;
+
+  /* ---- Kinetic hero title: split "MEMEBRANE" into per-letter spans ---- */
+  function splitHeroTitle(){
+    const el = document.getElementById('heroTitle');
+    if(!el || el.dataset.split) return;
+    const text = el.dataset.text || el.textContent;
+    el.textContent = '';
+    text.split('').forEach((ch, i)=>{
+      const span = document.createElement('span');
+      span.className = 'kchar';
+      span.textContent = ch === ' ' ? '\u00A0' : ch;
+      span.style.animationDelay = (i * 0.045) + 's';
+      el.appendChild(span);
+    });
+    el.dataset.split = 'true';
+  }
+  splitHeroTitle();
+
+  /* ---- Hero mouse parallax ---- */
+  if(!reduceMotion && !noHover){
+    const stage = document.getElementById('heroStage');
+    if(stage){
+      let px = 0, py = 0, tx = 0, ty = 0;
+      window.addEventListener('mousemove', e=>{
+        const r = stage.getBoundingClientRect();
+        if(e.clientY > r.bottom + 200) return; // only react near/above hero
+        const cx = r.left + r.width/2, cy = r.top + r.height/2;
+        tx = ((e.clientX - cx) / r.width) * 18;
+        ty = ((e.clientY - cy) / r.height) * 18;
+      }, { passive:true });
+      (function loop(){
+        px += (tx - px) * 0.08;
+        py += (ty - py) * 0.08;
+        stage.style.setProperty('--px', px.toFixed(2) + 'px');
+        stage.style.setProperty('--py', py.toFixed(2) + 'px');
+        requestAnimationFrame(loop);
+      })();
+    }
+  }
+
+  /* ---- Magnetic pull on interactive elements ---- */
+  if(!reduceMotion && !noHover){
+    const magSelector = '.btn, .nav-links a, .social-icon, .pill, .theme-switch, .uni-filter-btn, .calendar-nav button';
+    const magState = new Map(); // el -> {tx,ty,cx,cy,raf}
+
+    function attachMagnet(el){
+      if(el.dataset.magBound) return;
+      el.dataset.magBound = 'true';
+      el.style.transition = 'transform 0.25s cubic-bezier(.2,.8,.2,1)';
+      let tx = 0, ty = 0, cx = 0, cy = 0, raf = null;
+
+      function tick(){
+        cx += (tx - cx) * 0.2;
+        cy += (ty - cy) * 0.2;
+        el.style.transform = `translate(${cx.toFixed(2)}px, ${cy.toFixed(2)}px)`;
+        if(Math.abs(tx-cx) > 0.1 || Math.abs(ty-cy) > 0.1){
+          raf = requestAnimationFrame(tick);
+        } else {
+          raf = null;
+        }
+      }
+      function start(){ if(!raf) raf = requestAnimationFrame(tick); }
+
+      el.addEventListener('mousemove', e=>{
+        const r = el.getBoundingClientRect();
+        const relX = e.clientX - (r.left + r.width/2);
+        const relY = e.clientY - (r.top + r.height/2);
+        tx = relX * 0.28;
+        ty = relY * 0.28;
+        start();
+        document.getElementById('cursor-dot')?.classList.add('magnet-active');
+      });
+      el.addEventListener('mouseleave', ()=>{
+        tx = 0; ty = 0;
+        start();
+        document.getElementById('cursor-dot')?.classList.remove('magnet-active');
+      });
+    }
+
+    // Attach now, and re-scan after page switches / re-renders since content is dynamic.
+    function scanMagnets(){
+      document.querySelectorAll(magSelector).forEach(attachMagnet);
+    }
+    scanMagnets();
+    const magObserver = new MutationObserver(()=>scanMagnets());
+    magObserver.observe(document.body, { childList:true, subtree:true });
+  }
+
+  /* ---- Upgraded scroll reveals for the new .reveal* classes ---- */
+  function setupReveals(){
+    const targets = document.querySelectorAll('.reveal, .reveal-scale, .reveal-mask, .reveal-stagger');
+    if(!targets.length) return;
+    const obs = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){
+          e.target.classList.add('visible');
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold:0.15, rootMargin:'0px 0px -40px 0px' });
+    targets.forEach(el=>obs.observe(el));
+  }
+  setupReveals();
+  // Re-scan on page nav (goToPage swaps [hidden] pages in/out) and after dynamic renders.
+  const revealRescan = new MutationObserver(()=>setupReveals());
+  revealRescan.observe(document.body, { attributes:true, attributeFilter:['hidden'], subtree:true });
+})();
