@@ -982,8 +982,8 @@ updateScrollProgress();
   function getColors(){
     const red = document.body.classList.contains('theme-red');
     return red
-      ? { strand1:'#c0334d', strand2:'#f9c0cc', rung:'rgba(249,192,204,' }
-      : { strand1:'#6fae7e', strand2:'#e8c873',  rung:'rgba(232,200,115,' };
+      ? { strand1:'#5f6fc4', strand2:'#8b9ae0', rung:'rgba(139,154,224,' }
+      : { strand1:'#8b8bd6', strand2:'#c9536a',  rung:'rgba(201,83,106,' };
   }
 
   let tick = 0;
@@ -1235,36 +1235,36 @@ document.getElementById('unlockInput').addEventListener('keydown', (e)=>{
 
   function rand(a,b){ return a + Math.random()*(b-a); }
 
-  // Bubbles (membrane organelles)
-  const bubbles = Array.from({length: 22}, ()=>({
+  // Bubbles (membrane organelles) - dialed down for a subtler, more luxury ambience
+  const bubbles = Array.from({length: 14}, ()=>({
     x: rand(0,1)*W, y: rand(0,1)*H,
     r: rand(8,46),
-    vy: rand(0.08,0.35),
-    vx: rand(-0.08,0.08),
+    vy: rand(0.05,0.2),
+    vx: rand(-0.05,0.05),
     hue: Math.random()>0.5 ? 'gold' : 'green',
-    alpha: rand(0.05,0.18),
+    alpha: rand(0.03,0.1),
     wobble: rand(0,Math.PI*2),
     wobbleSpeed: rand(0.002,0.006)
   }));
 
   // Floating particles
-  const particles = Array.from({length: 60}, ()=>({
+  const particles = Array.from({length: 45}, ()=>({
     x: rand(0,1)*W, y: rand(0,1)*H,
-    r: rand(0.6,2.2),
-    vy: rand(0.05,0.25),
-    vx: rand(-0.05,0.05),
-    alpha: rand(0.15,0.55)
+    r: rand(0.5,1.8),
+    vy: rand(0.04,0.18),
+    vx: rand(-0.04,0.04),
+    alpha: rand(0.08,0.3)
   }));
 
   // Drifting brain glyph paths (simple blob "brain" silhouettes drawn procedurally)
-  const brains = Array.from({length: 4}, ()=>({
+  const brains = Array.from({length: 3}, ()=>({
     x: rand(0,1)*W, y: rand(0,1)*H,
     scale: rand(0.5,1.1),
     rot: rand(0,Math.PI*2),
     rotSpeed: rand(-0.0006,0.0006),
     vx: rand(-0.06,0.06),
     vy: rand(-0.04,0.04),
-    alpha: rand(0.04,0.09)
+    alpha: rand(0.025,0.05)
   }));
 
   function drawBrainGlyph(b){
@@ -1273,7 +1273,7 @@ document.getElementById('unlockInput').addEventListener('keydown', (e)=>{
     ctx.rotate(b.rot);
     ctx.scale(b.scale, b.scale);
     ctx.globalAlpha = b.alpha;
-    ctx.strokeStyle = document.body.classList.contains('theme-red') ? '#f9c0cc' : '#e8c873';
+    ctx.strokeStyle = document.body.classList.contains('theme-red') ? '#8b9ae0' : '#c9536a';
     ctx.lineWidth = 2;
     ctx.beginPath();
     // a loose brain-like double lobe outline
@@ -1308,25 +1308,25 @@ document.getElementById('unlockInput').addEventListener('keydown', (e)=>{
 
       const grad = ctx.createRadialGradient(b.x-b.r*0.3, b.y-b.r*0.3, b.r*0.1, b.x, b.y, b.r);
       if(isRed){
-        // red theme: gold→crimson, green→pink
+        // blue-accent variant: crimson→blue, violet→lighter blue
         if(b.hue==='gold'){
-          grad.addColorStop(0, `rgba(192,51,77,${b.alpha+0.12})`);
-          grad.addColorStop(0.7, `rgba(140,20,45,${b.alpha*0.5})`);
-          grad.addColorStop(1, `rgba(140,20,45,0)`);
+          grad.addColorStop(0, `rgba(95,111,196,${b.alpha+0.08})`);
+          grad.addColorStop(0.7, `rgba(70,82,160,${b.alpha*0.4})`);
+          grad.addColorStop(1, `rgba(70,82,160,0)`);
         } else {
-          grad.addColorStop(0, `rgba(249,192,204,${b.alpha+0.10})`);
-          grad.addColorStop(0.7, `rgba(220,140,160,${b.alpha*0.5})`);
-          grad.addColorStop(1, `rgba(220,140,160,0)`);
+          grad.addColorStop(0, `rgba(139,154,224,${b.alpha+0.07})`);
+          grad.addColorStop(0.7, `rgba(110,120,190,${b.alpha*0.4})`);
+          grad.addColorStop(1, `rgba(110,120,190,0)`);
         }
       } else {
         if(b.hue==='gold'){
-          grad.addColorStop(0, `rgba(232,200,115,${b.alpha+0.12})`);
-          grad.addColorStop(0.7, `rgba(212,168,67,${b.alpha*0.5})`);
-          grad.addColorStop(1, `rgba(212,168,67,0)`);
+          grad.addColorStop(0, `rgba(168,56,74,${b.alpha+0.08})`);
+          grad.addColorStop(0.7, `rgba(130,40,55,${b.alpha*0.4})`);
+          grad.addColorStop(1, `rgba(130,40,55,0)`);
         } else {
-          grad.addColorStop(0, `rgba(160,220,180,${b.alpha+0.10})`);
-          grad.addColorStop(0.7, `rgba(111,174,126,${b.alpha*0.5})`);
-          grad.addColorStop(1, `rgba(111,174,126,0)`);
+          grad.addColorStop(0, `rgba(139,139,214,${b.alpha+0.07})`);
+          grad.addColorStop(0.7, `rgba(100,100,170,${b.alpha*0.4})`);
+          grad.addColorStop(1, `rgba(100,100,170,0)`);
         }
       }
       ctx.beginPath();
@@ -1335,9 +1335,9 @@ document.getElementById('unlockInput').addEventListener('keydown', (e)=>{
       ctx.fill();
       ctx.beginPath();
       if(isRed){
-        ctx.strokeStyle = b.hue==='gold' ? `rgba(192,51,77,${b.alpha+0.15})` : `rgba(249,192,204,${b.alpha+0.15})`;
+        ctx.strokeStyle = b.hue==='gold' ? `rgba(95,111,196,${b.alpha+0.12})` : `rgba(139,154,224,${b.alpha+0.12})`;
       } else {
-        ctx.strokeStyle = b.hue==='gold' ? `rgba(232,200,115,${b.alpha+0.15})` : `rgba(111,174,126,${b.alpha+0.15})`;
+        ctx.strokeStyle = b.hue==='gold' ? `rgba(168,56,74,${b.alpha+0.12})` : `rgba(139,139,214,${b.alpha+0.12})`;
       }
       ctx.lineWidth = 1;
       ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
@@ -1349,7 +1349,7 @@ document.getElementById('unlockInput').addEventListener('keydown', (e)=>{
       p.y -= p.vy; p.x += p.vx;
       if(p.y < -5){ p.y = H+5; p.x = rand(0,1)*W; }
       ctx.beginPath();
-      ctx.fillStyle = `rgba(241,234,217,${p.alpha})`;
+      ctx.fillStyle = `rgba(244,244,242,${p.alpha})`;
       ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
       ctx.fill();
     });
@@ -1892,7 +1892,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   /* ---- Upgraded scroll reveals for the new .reveal* classes ---- */
   function setupReveals(){
-    const targets = document.querySelectorAll('.reveal, .reveal-scale, .reveal-mask, .reveal-stagger');
+    const targets = document.querySelectorAll('.reveal, .reveal-scale, .reveal-blur, .reveal-mask, .reveal-stagger');
     if(!targets.length) return;
     const obs = new IntersectionObserver((entries)=>{
       entries.forEach(e=>{
