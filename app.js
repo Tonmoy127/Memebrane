@@ -147,15 +147,16 @@ function renderPeopleList(type, gridId){
   }
   list.forEach(p=>{
     const card = document.createElement('div');
-    card.className = 'person-card glass fade-up visible';
+    card.className = 'person-card fade-up visible';
     const photoSrc = p.photo && p.photo.trim() ? p.photo : placeholderAvatar(p.name);
     card.innerHTML = `
-      <div class="glass-shine"></div>
       <img class="person-photo" src="${escapeHtml(photoSrc)}" alt="${escapeHtml(p.name)}" onerror="this.src='${placeholderAvatar(p.name)}'">
-      <div class="person-name">${escapeHtml(p.name)}</div>
-      <div class="person-role">${escapeHtml(p.role)}</div>
-      <div class="person-bio">${escapeHtml(p.bio)}</div>
+      <div class="person-info">
+        <div class="person-name">${escapeHtml(p.name)}</div>
+        <div class="person-role">${escapeHtml(p.role)}</div>
+      </div>
       <button class="btn small edit-btn edit-only" onclick="openPersonModal('${type}','${p.id}')">✏️ Edit</button>
+      <div class="person-bio">${escapeHtml(p.bio)}</div>
     `;
     grid.appendChild(card);
   });
@@ -289,7 +290,7 @@ function renderUpcoming(){
   const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   list.innerHTML = upcoming.map(e=>{
     const [yy,mm,dd] = e.date.split('-').map(Number);
-    return `<div class="upcoming-item flat-panel">
+    return `<div class="upcoming-item">
       <div class="upcoming-date">${months[mm-1]}<br>${dd}</div>
       <div class="upcoming-info" style="flex:1;">
         <strong>${escapeHtml(e.title)}</strong>
