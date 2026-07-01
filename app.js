@@ -84,30 +84,6 @@ async function saveData(){
 }
 function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
 
-/* ============================================================
-   THEME TOGGLE (green ↔ red)
-   ============================================================ */
-function setTheme(value){
-  const isRed = value === 'red';
-  document.body.classList.toggle('theme-red', isRed);
-  const switchInput = document.getElementById('themeSwitchInput');
-  if(switchInput) switchInput.checked = isRed;
-  const switchInputMobile = document.getElementById('themeSwitchInputMobile');
-  if(switchInputMobile) switchInputMobile.checked = isRed;
-  // Swap all logo images
-  const logoSrc = isRed ? 'logo_red.png' : 'logo.jpg';
-  const heroLogo = document.querySelector('.hero-logo');
-  const navLogo  = document.querySelector('.nav-brand img');
-  const footerLogo = document.querySelector('footer .fbrand img');
-  if(heroLogo)   heroLogo.src   = logoSrc;
-  if(navLogo)    navLogo.src    = logoSrc;
-  if(footerLogo) footerLogo.src = logoSrc;
-  // update background radial gradient inline
-  document.body.style.background = isRed
-    ? 'radial-gradient(ellipse at 20% 10%, #3a0612 0%, #0e0106 45%, #060002 100%)'
-    : 'radial-gradient(ellipse at 20% 10%, #0d2f1c 0%, #04140d 45%, #020a06 100%)';
-}
-
 function toast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -598,7 +574,7 @@ async function downloadRoutinePDF(){
   // Fetch logo and clip to circle using an offscreen canvas
   let logoCircleB64 = null;
   try {
-    const resp = await fetch('/logo.jpg');
+    const resp = await fetch('/logo_red.png');
     const blob = await resp.blob();
     const imgBitmap = await createImageBitmap(blob);
     const sz = 200; // high-res offscreen canvas for crisp rendering
@@ -980,10 +956,7 @@ updateScrollProgress();
   document.addEventListener('mouseenter',()=>{ dot.style.opacity='1'; });
 
   function getColors(){
-    const red = document.body.classList.contains('theme-red');
-    return red
-      ? { strand1:'#5f6fc4', strand2:'#8b9ae0', rung:'rgba(139,154,224,' }
-      : { strand1:'#8b8bd6', strand2:'#c9536a',  rung:'rgba(201,83,106,' };
+    return { strand1:'#8b8bd6', strand2:'#c9536a', rung:'rgba(201,83,106,' };
   }
 
   let tick = 0;
@@ -1079,7 +1052,6 @@ updateScrollProgress();
 })();
 
 
-window.setTheme = setTheme;
 
 /* ============================================================
    SECRET EDITOR UNLOCK
@@ -1273,7 +1245,7 @@ document.getElementById('unlockInput').addEventListener('keydown', (e)=>{
     ctx.rotate(b.rot);
     ctx.scale(b.scale, b.scale);
     ctx.globalAlpha = b.alpha;
-    ctx.strokeStyle = document.body.classList.contains('theme-red') ? '#8b9ae0' : '#c9536a';
+    ctx.strokeStyle = '#c9536a';
     ctx.lineWidth = 2;
     ctx.beginPath();
     // a loose brain-like double lobe outline
@@ -1296,7 +1268,6 @@ document.getElementById('unlockInput').addEventListener('keydown', (e)=>{
 
   function frame(){
     ctx.clearRect(0,0,W,H);
-    const isRed = document.body.classList.contains('theme-red');
 
     // bubbles
     bubbles.forEach(b=>{
@@ -1307,38 +1278,21 @@ document.getElementById('unlockInput').addEventListener('keydown', (e)=>{
       if(b.x > W + b.r) b.x = -b.r;
 
       const grad = ctx.createRadialGradient(b.x-b.r*0.3, b.y-b.r*0.3, b.r*0.1, b.x, b.y, b.r);
-      if(isRed){
-        // blue-accent variant: crimson→blue, violet→lighter blue
-        if(b.hue==='gold'){
-          grad.addColorStop(0, `rgba(95,111,196,${b.alpha+0.08})`);
-          grad.addColorStop(0.7, `rgba(70,82,160,${b.alpha*0.4})`);
-          grad.addColorStop(1, `rgba(70,82,160,0)`);
-        } else {
-          grad.addColorStop(0, `rgba(139,154,224,${b.alpha+0.07})`);
-          grad.addColorStop(0.7, `rgba(110,120,190,${b.alpha*0.4})`);
-          grad.addColorStop(1, `rgba(110,120,190,0)`);
-        }
+      if(b.hue==='gold'){
+        grad.addColorStop(0, `rgba(168,56,74,${b.alpha+0.08})`);
+        grad.addColorStop(0.7, `rgba(130,40,55,${b.alpha*0.4})`);
+        grad.addColorStop(1, `rgba(130,40,55,0)`);
       } else {
-        if(b.hue==='gold'){
-          grad.addColorStop(0, `rgba(168,56,74,${b.alpha+0.08})`);
-          grad.addColorStop(0.7, `rgba(130,40,55,${b.alpha*0.4})`);
-          grad.addColorStop(1, `rgba(130,40,55,0)`);
-        } else {
-          grad.addColorStop(0, `rgba(139,139,214,${b.alpha+0.07})`);
-          grad.addColorStop(0.7, `rgba(100,100,170,${b.alpha*0.4})`);
-          grad.addColorStop(1, `rgba(100,100,170,0)`);
-        }
+        grad.addColorStop(0, `rgba(139,139,214,${b.alpha+0.07})`);
+        grad.addColorStop(0.7, `rgba(100,100,170,${b.alpha*0.4})`);
+        grad.addColorStop(1, `rgba(100,100,170,0)`);
       }
       ctx.beginPath();
       ctx.fillStyle = grad;
       ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
       ctx.fill();
       ctx.beginPath();
-      if(isRed){
-        ctx.strokeStyle = b.hue==='gold' ? `rgba(95,111,196,${b.alpha+0.12})` : `rgba(139,154,224,${b.alpha+0.12})`;
-      } else {
-        ctx.strokeStyle = b.hue==='gold' ? `rgba(168,56,74,${b.alpha+0.12})` : `rgba(139,139,214,${b.alpha+0.12})`;
-      }
+      ctx.strokeStyle = b.hue==='gold' ? `rgba(168,56,74,${b.alpha+0.12})` : `rgba(139,139,214,${b.alpha+0.12})`;
       ctx.lineWidth = 1;
       ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
       ctx.stroke();
@@ -1844,7 +1798,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   /* ---- Magnetic pull on interactive elements ---- */
   if(!reduceMotion && !noHover){
-    const magSelector = '.btn, .nav-links a, .social-icon, .pill, .theme-switch, .uni-filter-btn, .calendar-nav button';
+    const magSelector = '.btn, .nav-links a, .social-icon, .pill, .uni-filter-btn, .calendar-nav button';
     const magState = new Map(); // el -> {tx,ty,cx,cy,raf}
 
     function attachMagnet(el){

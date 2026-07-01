@@ -24,96 +24,7 @@
   --membrane-rgb: 139,139,214;
   --space-section: clamp(90px, 12vw, 160px);
 }
-/* ===== ACCENT VARIANT (toggle) - crimson (default) <-> muted blue/violet ===== */
-body.theme-red{
-  --gold:#5f6fc4;
-  --gold-bright:#8b9ae0;
-  --membrane:#c9536a;
-  --gold-rgb: 139,154,224;
-  --membrane-rgb: 201,83,106;
-  --glass-border-bright: rgba(139,154,224,0.45);
-}
-body.theme-red .cal-cell.today{
-  background: rgba(139,154,224,0.06);
-}
-body.theme-red .cal-cell.has-events{
-  background: rgba(139,154,224,0.05);
-  box-shadow:inset 3px 0 0 rgba(139,154,224,0.5);
-}
-body.theme-red .cal-cell.has-events:hover{
-  background: rgba(139,154,224,0.1);
-}
-body.theme-red .cal-event{
-  border-left-color: var(--gold);
-}
-body.theme-red #cursor-ring{
-  border-color: rgba(139,154,224,0.45);
-}
-body.theme-red.cursor-pointer #cursor-ring{
-  border-color: rgba(139,154,224,0.65);
-}
-body.theme-red .hero-logo{
-  border-color: var(--gold-bright);
-  box-shadow: 0 0 60px rgba(95,111,196,0.4), 0 0 120px rgba(139,154,224,0.15) !important;
-}
-body.theme-red .nav-brand img{
-  border-color: var(--gold-bright);
-  box-shadow: 0 0 14px rgba(139,154,224,0.35);
-}
-body.theme-red .toast{
-  background: rgba(8,8,10,0.94);
-  color: var(--gold-bright);
-}
-body.theme-red .btn.secondary{
-  background: rgba(201,83,106,0.1);
-  color: var(--gold-bright);
-  border-color: rgba(201,83,106,0.4) !important;
-}
-body.theme-red .btn.secondary:hover{
-  background: rgba(201,83,106,0.2);
-  box-shadow: 0 0 18px rgba(201,83,106,0.25);
-  border-color: rgba(139,154,224,0.45) !important;
-}
-body.theme-red .writing-index{
-  color: rgba(139,154,224,0.10);
-}
-@media (max-width:980px){
-  body.theme-red .nav-links{
-    background: rgba(8,8,10,0.97) !important;
-    box-shadow: 0 16px 40px rgba(0,0,0,0.6), 0 0 30px rgba(139,154,224,0.12);
-  }
-}
 
-/* ===== THEME SWITCH (nav, far right) ===== */
-.theme-switch{
-  display:inline-flex; align-items:center; cursor:none; flex-shrink:0;
-}
-.theme-switch input{
-  position:absolute; opacity:0; width:0; height:0; pointer-events:none;
-}
-.theme-switch-track{
-  position:relative; display:inline-block;
-  width:46px; height:24px; border-radius:30px;
-  background:rgba(255,255,255,0.14);
-  border:1px solid var(--glass-border);
-  transition:background 0.25s ease, border-color 0.25s ease;
-}
-.theme-switch-thumb{
-  position:absolute; top:2px; left:2px;
-  width:18px; height:18px; border-radius:50%;
-  background:var(--gold-bright);
-  box-shadow:0 0 8px rgba(201,83,106,0.5);
-  transition:transform 0.25s cubic-bezier(.4,0,.2,1), background 0.25s ease, box-shadow 0.25s ease;
-}
-.theme-switch input:checked + .theme-switch-track{
-  background:rgba(192,51,77,0.35);
-  border-color:rgba(249,192,204,0.5);
-}
-.theme-switch input:checked + .theme-switch-track .theme-switch-thumb{
-  transform:translateX(20px);
-  background:#f9c0cc;
-  box-shadow:0 0 8px rgba(249,192,204,0.6);
-}
 
 *{margin:0;padding:0;box-sizing:border-box; cursor:none;}
 html{scroll-behavior:smooth;}
@@ -285,9 +196,7 @@ nav::after{
   .nav-socials{ gap:2px; margin-left:4px; }
   .social-icon{ width:28px; height:28px; }
   .nav-right{ gap:8px; }
-  .theme-switch-track{ width:38px; height:20px; }
-  .theme-switch-thumb{ width:15px; height:15px; }
-  .theme-switch input:checked + .theme-switch-track .theme-switch-thumb{ transform:translateX(17px); }
+
   .nav-brand span{ font-size:1rem; }
   .nav-brand img{ width:28px; height:28px; }
 }
@@ -1058,7 +967,7 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
 
 <nav>
   <div class="nav-brand">
-    <img src="logo.jpg" alt="Memebrane logo">
+    <img src="logo_red.png" alt="Memebrane logo">
     <span>Memebrane</span>
   </div>
   <button class="nav-toggle" id="navToggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
@@ -1085,10 +994,6 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
       </a>
     </div>
-    <label class="theme-switch" id="themeSwitch" aria-label="Toggle red theme">
-      <input type="checkbox" id="themeSwitchInput" onchange="setTheme(this.checked ? 'red' : 'green')">
-      <span class="theme-switch-track"><span class="theme-switch-thumb"></span></span>
-    </label>
   </div>
 </nav>
 <div class="nav-progress-track" aria-hidden="true"><div class="nav-progress-bar" id="navProgressBar"></div></div>
@@ -1096,7 +1001,7 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
 <div class="page" id="page-home">
 <header class="hero" id="heroStage">
   <span class="hero-kicker">Est. for the chronically online</span>
-  <div class="hero-logo-parallax"><img src="logo.jpg" alt="Memebrane" class="hero-logo"></div>
+  <div class="hero-logo-parallax"><img src="logo_red.png" alt="Memebrane" class="hero-logo"></div>
   <h1 class="kinetic" id="heroTitle" data-text="MEMEBRANE">MEMEBRANE</h1>
   <p class="tag">Welcome, Memebraniacs, to the home of educational mayhem, community art, and the occasional brainwave.</p>
   <div class="pill glass">🧠 Built for the Memebraniacs</div>
@@ -1258,7 +1163,7 @@ footer img{ width:32px; vertical-align:middle; border-radius:50%; margin-right:8
 </div>
 
 <footer>
-  <div class="fbrand"><img src="logo.jpg" alt="">Memebrane</div>
+  <div class="fbrand"><img src="logo_red.png" alt="">Memebrane</div>
   <div class="footer-socials">
     <a href="https://www.facebook.com/memebrane69" target="_blank" aria-label="Facebook Page" class="social-icon">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
