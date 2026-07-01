@@ -932,11 +932,13 @@ updateScrollProgress();
 
   function rand(a,b){ return a + Math.random()*(b-a); }
 
-  // Comet heading: smoothed direction of travel, used to draw a real
-  // fanned tail (like a comet illustration) rather than a trail of past
-  // cursor positions - so it doesn't stretch into a line on fast moves.
-  let headingX = -1, headingY = 0; // unit vector, tail points opposite to this
-  let travelSpeed = 0; // smoothed pixel-distance-per-move, drives tail length
+  // Comet trail: kept as a short, distance-capped history of positions
+  // (like the old DNA trail) so it draws as real trailing strand-lines,
+  // but capped by physical length so fast flicks don't stretch it out.
+  const TRAIL_MAX_LEN = 70; // max px of trail kept, regardless of speed
+  const trail = []; // [{x,y,arc}]
+  let trailArc = 0;
+  const STRANDS = 3; // number of parallel cosmic-string lines in the trail
 
   // Particle sparks flung off behind the comet head. These persist for
   // several seconds and drift to a slow stop rather than vanishing quickly -
@@ -953,16 +955,11 @@ updateScrollProgress();
     const dx = mouseX - prevX, dy = mouseY - prevY;
     const dist = Math.sqrt(dx*dx + dy*dy);
 
-    if(dist > 0.4){
-      const invD = 1/dist;
-      // Smoothly steer heading toward the new direction instead of snapping,
-      // so the tail sweeps rather than flickers when direction changes fast.
-      headingX += (dx*invD - headingX) * 0.35;
-      headingY += (dy*invD - headingY) * 0.35;
-      const hl = Math.sqrt(headingX*headingX + headingY*headingY) || 1;
-      headingX /= hl; headingY /= hl;
+    trailArc += dist;
+    trail.push({ x: mouseX, y: mouseY, arc: trailArc });
+    while(trail.length > 1 && (trailArc - trail[0].arc) > TRAIL_MAX_LEN){
+      trail.shift();
     }
-    travelSpeed += (Math.min(dist, 60) - travelSpeed) * 0.3;
 
     // Spawn a modest, capped number of particles per move event (not scaled
     // by distance) so a fast flick sheds a small burst rather than a long
@@ -1004,50 +1001,53 @@ updateScrollProgress();
     ctx.clearRect(0, 0, W, H);
     const col = getColors();
 
-    // Ease travel speed back down when the cursor is idle so the tail
-    // shrinks toward a small resting length instead of hanging around
-    // at max size forever.
-    travelSpeed *= 0.94;
+    // ---- Comet trail: several thin, straight-ish cosmic-string strands
+    // running through recent positions, each with a slight fixed offset
+    // so they read as parallel trailing lines rather than one thick tail. ----
+    const n = trail.length;
+    if(n > 1){
+      const tipArc = trail[n-1].arc;
+      const tailArc = trail[0].arc;
+      const trailLen = tipArc - tailArc || 1;
 
-    // ---- Comet tail: fanned, feathered shape pointing back along heading ----
-    const tailLen = 34 + Math.min(travelSpeed, 60) * 2.4; // visible even at rest, grows with speed
-    const tailWidth = isPointer ? 16 : 12;
-    const tx = -headingX, ty = -headingY; // tail direction = opposite of travel
-    const px_ = -ty, py_ = tx; // perpendicular for fan width
+      for(let s = 0; s < STRANDS; s++){
+        // Each strand offset perpendicular to local travel direction by a
+        // small fixed amount, and given a distinct hue for a layered look.
+        const strandOffset = (s - (STRANDS-1)/2) * (isPointer ? 3.4 : 2.4);
+        const rgb = s % 2 === 0 ? col.gold : col.membrane;
 
-    const tailTipX = mouseX + tx * tailLen;
-    const tailTipY = mouseY + ty * tailLen;
-    const baseLX = mouseX + px_ * tailWidth * 0.4;
-    const baseLY = mouseY + py_ * tailWidth * 0.4;
-    const baseRX = mouseX - px_ * tailWidth * 0.4;
-    const baseRY = mouseY - py_ * tailWidth * 0.4;
-    // control points bow the fan outward for a feathered, curved silhouette
-    const midX = mouseX + tx * tailLen * 0.55;
-    const midY = mouseY + ty * tailLen * 0.55;
-    const ctrlLX = midX + px_ * tailWidth * 1.5;
-    const ctrlLY = midY + py_ * tailWidth * 1.5;
-    const ctrlRX = midX - px_ * tailWidth * 1.5;
-    const ctrlRY = midY - py_ * tailWidth * 1.5;
+        for(let i = 1; i < n; i++){
+          const p0 = trail[i-1];
+          const p1 = trail[i];
+          const t0 = (p0.arc - tailArc) / trailLen;
+          const t1 = (p1.arc - tailArc) / trailLen;
+          const tMid = (t0 + t1) / 2;
 
-    const tailGrad = ctx.createLinearGradient(mouseX, mouseY, tailTipX, tailTipY);
-    tailGrad.addColorStop(0, `rgba(${col.gold},0.85)`);
-    tailGrad.addColorStop(0.4, `rgba(${col.membrane},0.5)`);
-    tailGrad.addColorStop(1, `rgba(${col.membrane},0)`);
+          const dx = p1.x - p0.x, dy = p1.y - p0.y;
+          const d = Math.sqrt(dx*dx + dy*dy) || 1;
+          const nx = -dy/d, ny = dx/d;
 
-    ctx.beginPath();
-    ctx.moveTo(baseLX, baseLY);
-    ctx.quadraticCurveTo(ctrlLX, ctrlLY, tailTipX, tailTipY);
-    ctx.quadraticCurveTo(ctrlRX, ctrlRY, baseRX, baseRY);
-    ctx.closePath();
-    ctx.fillStyle = tailGrad;
-    ctx.fill();
+          const s0x = p0.x + nx * strandOffset * t0;
+          const s0y = p0.y + ny * strandOffset * t0;
+          const s1x = p1.x + nx * strandOffset * t1;
+          const s1y = p1.y + ny * strandOffset * t1;
+
+          ctx.beginPath();
+          ctx.moveTo(s0x, s0y);
+          ctx.lineTo(s1x, s1y);
+          ctx.strokeStyle = `rgba(${rgb},${(tMid*0.75).toFixed(3)})`;
+          ctx.lineWidth = 1.3 + tMid * 1.4;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+        }
+      }
+    }
 
     // Bright core glow at the head
-    const glowR = isPointer ? 22 : isDown ? 12 : 18;
+    const glowR = isPointer ? 15 : isDown ? 7 : 11;
     const grad = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, glowR);
-    grad.addColorStop(0, `rgba(255,240,235,0.95)`);
-    grad.addColorStop(0.35, `rgba(${col.gold},0.8)`);
-    grad.addColorStop(0.7, `rgba(${col.membrane},0.35)`);
+    grad.addColorStop(0, `rgba(255,240,235,0.85)`);
+    grad.addColorStop(0.4, `rgba(${col.gold},0.6)`);
     grad.addColorStop(1, `rgba(${col.membrane},0)`);
     ctx.beginPath();
     ctx.fillStyle = grad;
